@@ -2,11 +2,11 @@
 #include "Tokenizer.h"
 #include <assert.h>
 
-bool Tokenizer::Tokenize(std::string_view text, int line) {
-	m_End = text.data() + text.length();
+bool Tokenizer::Tokenize(std::string text, int line) {
+	m_Text = std::move(text);
 	m_Line = line;
 	m_Col = 1;
-	m_Current = text.data();
+	m_Current = m_Text.data();
 	return true;
 }
 
@@ -31,7 +31,9 @@ Token Tokenizer::Next() {
 	if (ch >= '0' && ch <= '9') {
 		return ParseNumber();
 	}
-
+	if (ch == '\"') {
+		return ParseString();
+	}
 	return ParseOperator();
 }
 
@@ -46,8 +48,30 @@ Token Tokenizer::Peek() {
 	return token;
 }
 
+bool Tokenizer::ProcessSingleLineComment() {
+	auto current = m_Current;
+	int i = 0;
+	while (*current && *current++ == m_CommentToEndOfLine[i++]) {
+		if (i == m_CommentToEndOfLine.length())
+			break;
+	}
+	if (i == m_CommentToEndOfLine.length()) {
+		//
+		// move to next line
+		//
+		m_Current = current;
+		while (*m_Current && *m_Current != '\n')
+			m_Current++;
+		m_Current++;
+		m_Line++;
+		m_Col = 1;
+		return true;
+	}
+	return false;
+}
+
 void Tokenizer::EatWhitespace() {
-	while (m_Current != m_End && isspace(*m_Current)) {
+	while (*m_Current && isspace(*m_Current)) {
 		m_Col++;
 		if (*m_Current == '\n') {
 			m_Col = 1;
@@ -55,24 +79,24 @@ void Tokenizer::EatWhitespace() {
 		}
 		++m_Current;
 	}
+	if (ProcessSingleLineComment())
+		EatWhitespace();
 }
 
 Token Tokenizer::ParseIdentifier() {
 	std::string lexeme;
-	while (m_Current != m_End && !isspace(*m_Current) && !ispunct(*m_Current)) {
+	while (*m_Current && !isspace(*m_Current) && !ispunct(*m_Current)) {
+		if (ProcessSingleLineComment())
+			break;
 		lexeme += *m_Current++;
 		m_Col++;
-	}
-	if (*m_Current == '\n') {
-		m_Col = 1;
-		m_Line++;
 	}
 	assert(!lexeme.empty());
 	auto type = TokenType::Identifier;
 	if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end())
 		type = it->second;
 	int len = (int)lexeme.length();
-	return Token{ .Type = type, .Lexeme = std::move(lexeme), .Line = m_Line, .Col = m_Col - len + 1, };
+	return Token{ .Type = type, .Lexeme = std::move(lexeme), .Line = m_Line, .Col = m_Col - len, };
 }
 
 Token Tokenizer::ParseNumber() {
@@ -81,14 +105,16 @@ Token Tokenizer::ParseNumber() {
 	auto ivalue = strtoll(m_Current, &pi, 0);
 	assert(pd && pi);
 	auto type = pd > pi ? TokenType::Real : TokenType::Integer;
-	auto len = type == TokenType::Real ? pd - m_Current : pi - m_Current;
+	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
 	m_Col += (int)len;
 	m_Current += len;
-	auto token = Token{ .Type = type, .Lexeme = std::string(m_Current - len, m_Current), .Line = m_Line, .Col = m_Col };
+	auto token = Token{ .Type = type, .Lexeme = std::string(m_Current - len, m_Current), .Line = m_Line, .Col = m_Col - len };
 	if (*m_Current == '\n') {
 		m_Col = 1;
 		m_Line++;
+		m_Current++;
 	}
+	ProcessSingleLineComment();
 	return token;
 }
 
@@ -124,7 +150,12 @@ Token Tokenizer::ParseOperator() {
 	m_Current -= (temp.length() - lexeme.length());
 	if (lexeme.empty()) {
 		lexeme = temp;
-		return Token{.Type = TokenType::Operator, .Lexeme = std::move(lexeme), .Line = m_Line, .Col = m_Col - (int)lexeme.length() };
+		return Token{.Type = TokenType::Operator, .Lexeme = lexeme, .Line = m_Line, .Col = m_Col - (int)lexeme.length() };
 	}
-	return Token{.Type = type, .Lexeme = std::move(lexeme), .Line = m_Line, .Col = m_Col - (int)lexeme.length() };
+	return Token{.Type = type, .Lexeme = lexeme, .Line = m_Line, .Col = m_Col - (int)lexeme.length() };
+}
+
+Token Tokenizer::ParseString() {
+	assert(false);
+	return Token();
 }

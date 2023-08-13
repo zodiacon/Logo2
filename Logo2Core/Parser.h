@@ -1,42 +1,39 @@
 #pragma once
 
 #include "Logo2Ast.h"
+#include "Parslets.h"
+#include <stack>
+#include "SymbolTable.h"
 
 class Tokenizer;
 struct Token;
 enum class TokenType;
 class Parser;
 
-struct InfixParslet abstract {
-	virtual std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) = 0;
-	virtual int Precedence() const = 0;
-};
-
-struct PrefixParslet abstract {
-	virtual std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) = 0;
-	virtual int Precedence() const {
-		return 0;
-	}
-};
-
-enum class ParserError {
+enum class ParseErrorType {
 	NoError,
+	Syntax,
 	UnknownOperator,
 	IdentifierExpected,
 	MissingInitExpression,
 	SemicolonExpected,
 	AssignExpected,
+	CommaExpected,
+	CommaOrCloseParenExpected,
+	DuplicateDefinition,
+	UndefinedSymbol,
+	CannotModifyConst,
 };
 
-struct ParserException {
-	ParserError Error;
+struct ParserError {
+	ParseErrorType Error;
 	Token ErrorToken;
 };
 
 class Parser {
 public:
 	explicit Parser(Tokenizer& tokenizer);
-	std::unique_ptr<LogoAstNode> Parse(std::string_view text, int line = 1);
+	std::unique_ptr<LogoAstNode> Parse(std::string text, int line = 1);
 	std::unique_ptr<LogoAstNode> ParseFile(std::string_view filename);
 
 	bool AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet);
@@ -49,6 +46,9 @@ public:
 	Token Peek() const;
 	bool Match(TokenType type, bool consume = true);
 
+	bool AddSymbol(Symbol sym);
+	Symbol const* FindSymbol(std::string const& name) const;
+
 private:
 	void Init();
 	std::unique_ptr<LogoAstNode> DoParse();
@@ -59,47 +59,7 @@ private:
 	std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
 	std::vector<Token> m_Tokens;
 	size_t m_Current;
+	std::stack<SymbolTable> m_Symbols;
+	bool m_HasErrors{ false };
 };
 
-struct NumberParslet : PrefixParslet {
-	std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-};
-
-struct NameParslet : PrefixParslet {
-	std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-};
-
-struct GroupParslet : PrefixParslet {
-	std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-	int Precedence() const override;
-};
-
-struct PrefixOperatorParslet : PrefixParslet {
-	explicit PrefixOperatorParslet(int precedence);
-
-	std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-	int Precedence() const override;
-
-private:
-	int m_Precedence;
-};
-
-struct PostfixOperatorParslet : InfixParslet {
-	std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
-	int Precedence() const override;
-};
-
-struct BinaryOperatorParslet : InfixParslet {
-	explicit BinaryOperatorParslet(int precedence, bool right = false);
-	std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
-	int Precedence() const override;
-
-private:
-	int m_Precedence;
-	bool m_RightAssoc;
-};
-
-struct AssignParslet : InfixParslet {
-	std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
-	int Precedence() const override;
-};

@@ -3,14 +3,32 @@
 #include "Logo2Ast.h"
 #include <cassert>
 #include "Tokenizer.h"
+#include <fstream>
 
 Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	Init();
+	m_Symbols.push(SymbolTable());
 }
 
-std::unique_ptr<LogoAstNode> Parser::Parse(std::string_view text, int line) {
-	m_Tokenizer.Tokenize(text, line);
+std::unique_ptr<LogoAstNode> Parser::Parse(std::string text, int line) {
+	m_Tokenizer.Tokenize(std::move(text), line);
+	m_HasErrors = false;
 	return DoParse();
+}
+
+std::unique_ptr<LogoAstNode> Parser::ParseFile(std::string_view filename) {
+	std::ifstream stm(filename.data());
+	if (!stm.good())
+		return nullptr;
+
+	std::string text;
+	char buf[2048];
+	while (!stm.eof()) {
+		stm.getline(buf, _countof(buf));
+		text += buf;
+		text += "\n";
+	}
+	return Parse(std::move(text));
 }
 
 bool Parser::AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet) {
@@ -19,45 +37,6 @@ bool Parser::AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet) {
 
 bool Parser::AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, std::move(parslet) }).second;
-}
-
-std::unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<NameExpression>(token.Lexeme);
-}
-
-std::unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<UnaryExpression>(token, parser.ParseExpression(m_Precedence));
-}
-
-std::unique_ptr<Expression> NumberParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<LiteralExpression>(token);
-}
-
-std::unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	auto right = parser.ParseExpression(m_Precedence - (m_RightAssoc ? 1 : 0));
-	return std::make_unique<BinaryExpression>(std::move(left), token, std::move(right));
-}
-
-std::unique_ptr<Expression> PostfixOperatorParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	return std::make_unique<PostfixExpression>(std::move(left), token);
-}
-
-BinaryOperatorParslet::BinaryOperatorParslet(int precedence, bool right) : m_Precedence(precedence), m_RightAssoc(right) {
-}
-
-PrefixOperatorParslet::PrefixOperatorParslet(int precedence) : m_Precedence(precedence) {
-}
-
-int BinaryOperatorParslet::Precedence() const {
-	return m_Precedence;
-}
-
-int PrefixOperatorParslet::Precedence() const {
-	return m_Precedence;
-}
-
-int PostfixOperatorParslet::Precedence() const {
-	return 0;
 }
 
 std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {
@@ -73,14 +52,14 @@ std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 		}
 		return left;
 	}
-	throw ParserException(ParserError::UnknownOperator, token);
+	throw ParserError(ParseErrorType::UnknownOperator, token);
 }
 
 std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
 	auto next = Next();		// var or const
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
-		throw ParserException(ParserError::IdentifierExpected, name);
+		throw ParserError(ParseErrorType::IdentifierExpected, name);
 
 	std::unique_ptr<Expression> init;
 	if (Match(TokenType::Assign)) {
@@ -90,12 +69,18 @@ std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
 		init = ParseExpression();
 	}
 	else if (constant)
-		throw ParserException(ParserError::MissingInitExpression, Peek());
+		throw ParserError(ParseErrorType::MissingInitExpression, Peek());
 	else
-		throw ParserException(ParserError::AssignExpected, Peek());
+		throw ParserError(ParseErrorType::AssignExpected, Peek());
 
 	if (!Match(TokenType::SemiColon))
-		throw ParserException(ParserError::SemicolonExpected, Peek());
+		throw ParserError(ParseErrorType::SemicolonExpected, Peek());
+	Symbol sym;
+	sym.Name = name.Lexeme;
+	sym.Type = SymbolType::Variable;
+	sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
+	if (!AddSymbol(sym))
+		throw ParserError(ParseErrorType::DuplicateDefinition, name);
 	return std::make_unique<VarStatement>(name.Lexeme, constant, std::move(init));
 }
 
@@ -155,6 +140,7 @@ void Parser::Init() {
 	AddParslet(TokenType::LessThanOrEqual, std::make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::GreaterThan, std::make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::GreaterThanOrEqual, std::make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::OpenParen, std::make_unique<InvokeFunctionParslet>());
 
 }
 
@@ -167,7 +153,10 @@ std::unique_ptr<LogoAstNode> Parser::DoParse() {
 		switch (peek.Type) {
 			case TokenType::Keyword_Var: block->Add(ParseVarConstStatement(false)); break;
 			case TokenType::Keyword_Const: block->Add(ParseVarConstStatement(true)); break;
-			default: block->Add(ParseExpression()); break;
+			default: 
+				block->Add(ParseExpression()); 
+				Match(TokenType::SemiColon);
+				break;
 		}
 	}
 	return block;
@@ -197,26 +186,12 @@ bool Parser::Match(TokenType type, bool consume) {
 	return next.Type == type;
 }
 
-std::unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
-	auto expr = parser.ParseExpression();
-	parser.Match(TokenType::CloseParen);
-	return expr;
+bool Parser::AddSymbol(Symbol sym) {
+	return m_Symbols.top().AddSymbol(std::move(sym));
 }
 
-int GroupParslet::Precedence() const {
-	return 1000;
+Symbol const* Parser::FindSymbol(std::string const& name) const {
+	return m_Symbols.top().FindSymbol(name);
 }
 
-std::unique_ptr<Expression> AssignParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	auto right = parser.ParseExpression(Precedence() - 1);
-	if (left->Type() != NodeType::Name) {
-		throw ParserException(ParserError::IdentifierExpected, token);
-	}
-	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
-	parser.Match(TokenType::SemiColon);
-	return std::make_unique<AssignExpression>(nameExpr->Name(), std::move(right));
-}
 
-int AssignParslet::Precedence() const {
-	return 2;
-}

@@ -69,6 +69,9 @@ public:
 	PostfixExpression(std::unique_ptr<Expression> expr, Token token);
 	Value Accept(Interpreter* visitor) const override;
 
+	Token const& Operator() const;
+	Expression const* Argument() const;
+
 private:
 	Token m_Token;
 	std::unique_ptr<Expression> m_Expr;
@@ -127,3 +130,12 @@ private:
 	std::string m_Name;
 };
 
+class InvokeFunctionExpression : public Expression {
+public:
+	InvokeFunctionExpression(std::unique_ptr<Expression> obj, std::vector<std::unique_ptr<Expression>> args);
+	Value Accept(Interpreter* visitor) const override;
+
+private:
+	std::unique_ptr<Expression> m_Invoker;
+	std::vector<std::unique_ptr<Expression>> m_Arguments;
+};

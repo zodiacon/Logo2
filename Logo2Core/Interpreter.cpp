@@ -84,3 +84,11 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
     return Value();
 }
 
+Value Interpreter::VisitPostfix(PostfixExpression const* expr) {
+    return Value();
+}
+
+Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
+    return Value();
+}
+

@@ -32,7 +32,7 @@ PostfixExpression::PostfixExpression(std::unique_ptr<Expression> expr, Token tok
 }
 
 Value PostfixExpression::Accept(Interpreter* visitor) const {
-	return Value();
+	return visitor->VisitPostfix(this);
 }
 
 LiteralExpression::LiteralExpression(Token token) : m_Token(std::move(token)) {
@@ -148,4 +148,12 @@ std::string const& AssignExpression::Variable() const {
 
 Expression* const AssignExpression::Value() const {
 	return m_Expr.get();
+}
+
+InvokeFunctionExpression::InvokeFunctionExpression(std::unique_ptr<Expression> obj, std::vector<std::unique_ptr<Expression>> args) :
+	m_Invoker(std::move(obj)), m_Arguments(std::move(args)) {
+}
+
+Value InvokeFunctionExpression::Accept(Interpreter* visitor) const {
+	return visitor->VisitInvokeFunction(this);
 }
