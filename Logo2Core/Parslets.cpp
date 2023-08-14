@@ -82,9 +82,9 @@ std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::un
 		throw ParserError(ParseErrorType::Syntax, token);
 
 	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
-	auto sym = parser.FindSymbol(nameExpr->Name());
-	if (sym == nullptr)
-		throw ParserError(ParseErrorType::UndefinedSymbol, token);
+	//auto sym = parser.FindSymbol(nameExpr->Name());
+	//if (sym == nullptr)
+	//	parser.AddError(ParserError(ParseErrorType::UndefinedSymbol, token));
 
 	auto next = parser.Peek();
 	std::vector<std::unique_ptr<Expression>> args;

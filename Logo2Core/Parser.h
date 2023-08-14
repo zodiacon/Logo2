@@ -3,6 +3,7 @@
 #include "Logo2Ast.h"
 #include "Parslets.h"
 #include <stack>
+#include <span>
 #include "SymbolTable.h"
 
 class Tokenizer;
@@ -38,9 +39,13 @@ public:
 
 	bool AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet);
 	bool AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet);
+	void AddError(ParserError err);
+	bool HasErrors() const;
+	std::span<const ParserError> Errors() const;
 
 	std::unique_ptr<Expression> ParseExpression(int precedence = 0);
 	std::unique_ptr<VarStatement> ParseVarConstStatement(bool constant);
+	std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration();
 
 	Token Next();
 	Token Peek() const;
@@ -57,9 +62,9 @@ private:
 	Tokenizer& m_Tokenizer;
 	std::unordered_map<TokenType, std::unique_ptr<InfixParslet>> m_InfixParslets;
 	std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
+	std::vector<ParserError> m_Errors;
 	std::vector<Token> m_Tokens;
 	size_t m_Current;
 	std::stack<SymbolTable> m_Symbols;
-	bool m_HasErrors{ false };
 };
 

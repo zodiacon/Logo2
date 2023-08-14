@@ -64,6 +64,9 @@ private:
 	bool m_IsConst;
 };
 
+class FunctionDeclaration : public LogoAstNode {
+};
+
 class PostfixExpression : public Expression {
 public:
 	PostfixExpression(std::unique_ptr<Expression> expr, Token token);

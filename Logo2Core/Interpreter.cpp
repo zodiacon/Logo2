@@ -1,6 +1,18 @@
 #include "pch.h"
 #include "Interpreter.h"
 
+Interpreter::Interpreter() {
+    Function f;
+    f.ArgCount = 1;
+    f.NativeCode = [](auto& intr, auto& args) -> Value {
+        //auto& t = intr.GetCurrentTurtle();
+        //t.Forward(args[0]->Accept(&intr));
+        return Value();
+        };
+    m_Functions.insert({ "fd", std::move(f) });
+}
+
+
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
     auto& lit = expr->Literal();
     switch (lit.Type) {
@@ -34,7 +46,7 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
         case TokenType::LessThan: return expr->Left()->Accept(this) < expr->Right()->Accept(this);
         case TokenType::LessThanOrEqual: return expr->Left()->Accept(this) <= expr->Right()->Accept(this);
     }
-    return Value(nullptr);
+    return Value();
 }
 
 Value Interpreter::VisitUnary(UnaryExpression const* expr) {

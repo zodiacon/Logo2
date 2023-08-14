@@ -12,7 +12,7 @@ Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 
 std::unique_ptr<LogoAstNode> Parser::Parse(std::string text, int line) {
 	m_Tokenizer.Tokenize(std::move(text), line);
-	m_HasErrors = false;
+	m_Errors.clear();
 	return DoParse();
 }
 
@@ -37,6 +37,18 @@ bool Parser::AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet) {
 
 bool Parser::AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, std::move(parslet) }).second;
+}
+
+void Parser::AddError(ParserError err) {
+	m_Errors.emplace_back(std::move(err));
+}
+
+bool Parser::HasErrors() const {
+	return !m_Errors.empty();
+}
+
+std::span<const ParserError> Parser::Errors() const {
+	return m_Errors;
 }
 
 std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {

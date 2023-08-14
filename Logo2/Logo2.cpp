@@ -41,15 +41,21 @@ int main() {
 		}
 
 		auto ast = parser.Parse(code);
-
 		std::println("{}", ast->ToString());
-		Interpreter inter;
-		try {
-			auto result = ast->Accept(&inter);
-			std::println("result: {}", result.ToString());
+		if (parser.HasErrors()) {
+			for (auto& err : parser.Errors()) {
+				printf("(%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
+			}
 		}
-		catch (RuntimeError const& err) {
-			printf("Error! %d\n", (int)err.Error);
+		else {
+			Interpreter inter;
+			try {
+				auto result = ast->Accept(&inter);
+				std::println("result: {}", result.ToString());
+			}
+			catch (RuntimeError const& err) {
+				printf("Error! %d\n", (int)err.Error);
+			}
 		}
 	}
 	catch (ParserError const& ex) {
