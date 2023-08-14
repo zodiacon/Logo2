@@ -8,19 +8,21 @@ Turtle::Turtle(SDL3::Renderer& r) : m_Render(r) {
 	
 }
 
-bool Turtle::Init() {
+void Turtle::Draw() {
 	m_Render.SetDrawColor(255, 255, 255, 255);
 	m_Render.Clear();
 	m_Render.SetDrawColor(0, 0, 0, 255);
-	return true;
+
+	for (auto& [p1, p2] : m_Lines)
+		DrawLine(p1, p2);
 }
 
 void Turtle::Forward(float amount) {
 	auto state = Save();
 	m_State.X += std::cos(ToRad(m_State.Heading)) * amount * m_Step;
 	m_State.Y -= std::sin(ToRad(m_State.Heading)) * amount * m_Step;
-	if(!m_Penup)
-		DrawLine(state, m_State);
+	if (!m_Penup)
+		m_Lines.push_back({ { state.X, state.Y }, { m_State.X, m_State.Y } });
 }
 
 void Turtle::Back(float amount) {
@@ -76,6 +78,6 @@ float Turtle::ToRad(float angle) const {
 	return m_Radians ? angle : angle * std::numbers::pi_v<float> / 180;
 }
 
-void Turtle::DrawLine(TurtleState const& from, TurtleState const& to) const {
-	m_Render.Line(m_CenterX + from.X, m_CenterY + from.Y, m_CenterX + to.X, m_CenterY + to.Y);
+void Turtle::DrawLine(SDL3::FPoint const& from, SDL3::FPoint const& to) const {
+	m_Render.Line(m_CenterX + from.x, m_CenterY + from.y, m_CenterX + to.x, m_CenterY + to.y);
 }

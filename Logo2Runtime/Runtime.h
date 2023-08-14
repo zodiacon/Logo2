@@ -7,11 +7,15 @@
 class Runtime {
 public:
 	Runtime();
-	bool Init();
 
 	Turtle& GetTurtle();
 
+	bool PumpMessages();
+	void Draw();
+
 private:
+	bool Init();
+
 	SDL3::Window m_Window;
 	SDL3::Renderer m_Render;
 	Turtle m_Turtle;

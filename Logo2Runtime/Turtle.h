@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SimpleTypes.h>
+
 namespace SDL3 {
 	class Renderer;
 }
@@ -15,8 +17,7 @@ public:
 	Turtle(Turtle const&) = delete;
 	Turtle& operator=(Turtle const&) = delete;
 
-	bool Init();
-
+	void Draw();
 	void Forward(float amount);
 	void Back(float amount);
 	void Rotate(float angle);
@@ -34,9 +35,10 @@ public:
 
 private:
 	float ToRad(float angle) const;
-	void DrawLine(TurtleState const& from, TurtleState const& to) const;
+	void DrawLine(SDL3::FPoint const& from, SDL3::FPoint const& to) const;
 
 	SDL3::Renderer& m_Render;
+	std::vector<std::pair<SDL3::FPoint, SDL3::FPoint>> m_Lines;
 	float m_CenterX, m_CenterY;
 	TurtleState m_State;
 	bool m_Penup{ false };

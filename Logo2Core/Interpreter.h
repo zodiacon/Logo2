@@ -8,7 +8,7 @@
 
 class Interpreter {
 public:
-	Interpreter();
+	Interpreter(Runtime& rt);
 
 	Value VisitLiteral(LiteralExpression const* expr);
 	Value VisitBinary(BinaryExpression const* expr);
@@ -40,7 +40,7 @@ private:
 	};
 	std::unordered_map<std::string, Variable> m_Variables;
 	std::unordered_map<std::string, Function> m_Functions;
-	Runtime m_Runtime;
+	Runtime& m_Runtime;
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(Interpreter::VariableFlags);

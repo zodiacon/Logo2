@@ -2,7 +2,7 @@
 #include "Interpreter.h"
 #include <Errors.h>
 
-Interpreter::Interpreter() {
+Interpreter::Interpreter(Runtime& rt) : m_Runtime(rt) {
     Function f;
     f.ArgCount = 1;
     f.NativeCode = [](auto& intr, auto& args) -> Value {
@@ -11,8 +11,6 @@ Interpreter::Interpreter() {
         return Value();
         };
     m_Functions.insert({ "fd", std::move(f) });
-
-    m_Runtime.Init();
 }
 
 

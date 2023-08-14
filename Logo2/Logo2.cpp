@@ -52,13 +52,17 @@ int main() {
 			}
 		}
 		else {
-			Interpreter inter;
+			Runtime rt;
+			Interpreter inter(rt);
 			try {
 				auto result = ast->Accept(&inter);
 				std::println("result: {}", result.ToString());
 			}
 			catch (RuntimeError const& err) {
 				printf("Error! %d\n", (int)err.Error);
+			}
+			while (rt.PumpMessages()) {
+				rt.Draw();
 			}
 		}
 	}
