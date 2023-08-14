@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="SDL3">
+      <UniqueIdentifier>{6bc9f255-72b7-4154-8427-35c6814132cf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_assert.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_atomic.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_audio.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_begin_code.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_bits.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_blendmode.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_clipboard.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_close_code.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_copying.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_cpuinfo.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_egl.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_endian.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_error.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_events.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_filesystem.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_gamepad.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_guid.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_haptic.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_hidapi.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_hints.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_init.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_intrin.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_joystick.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_keyboard.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_keycode.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_loadso.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_locale.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_log.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_main.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_main_impl.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_messagebox.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_metal.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_misc.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_mouse.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_mutex.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_oldnames.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengl.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengl_glext.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles2.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles2_gl2.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles2_gl2ext.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles2_gl2platform.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_opengles2_khrplatform.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_pixels.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_platform.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_platform_defines.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_power.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_quit.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_rect.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_render.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_revision.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_rwops.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_scancode.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_sensor.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_shape.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_stdinc.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_surface.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_system.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_syswm.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_assert.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_common.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_compare.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_crc32.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_font.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_fuzzer.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_harness.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_log.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_md5.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_memory.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_test_random.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_thread.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_timer.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_touch.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_version.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_video.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3\SDL_vulkan.h">
+      <Filter>SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLGlobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDL3++.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SDL3++.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLGlobal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
