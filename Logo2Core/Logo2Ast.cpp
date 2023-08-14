@@ -149,10 +149,18 @@ Expression* const AssignExpression::Value() const {
 	return m_Expr.get();
 }
 
-InvokeFunctionExpression::InvokeFunctionExpression(std::unique_ptr<Expression> obj, std::vector<std::unique_ptr<Expression>> args) :
-	m_Invoker(std::move(obj)), m_Arguments(std::move(args)) {
+InvokeFunctionExpression::InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args) :
+	m_Name(std::move(name)), m_Arguments(std::move(args)) {
 }
 
 Value InvokeFunctionExpression::Accept(Interpreter* visitor) const {
 	return visitor->VisitInvokeFunction(this);
+}
+
+std::string const& InvokeFunctionExpression::Name() const {
+	return m_Name;
+}
+
+std::vector<std::unique_ptr<Expression>> const& InvokeFunctionExpression::Arguments() const {
+	return m_Arguments;
 }

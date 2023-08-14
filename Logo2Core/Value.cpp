@@ -1,5 +1,14 @@
 #include "pch.h"
 #include "Value.h"
+#include <Errors.h>
+
+float Value::ToFloat() const {
+	switch (m_Value.index()) {
+		case 0: return (float)Integer();
+		case 1: return (float)Real();
+	}
+	throw RuntimeError(ErrorType::TypeMismatch);
+}
 
 Value Value::operator-() const {
 	switch (m_Value.index()) {

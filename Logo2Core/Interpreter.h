@@ -4,16 +4,7 @@
 #include "Value.h"
 #include "Logo2Core.h"
 #include <functional>
-
-enum class ErrorType {
-	Success,
-	CannotAssignConst,
-};
-
-struct RuntimeError {
-	ErrorType Error;
-	LogoAstNode const* Node;
-};
+#include <Runtime.h>
 
 class Interpreter {
 public:
@@ -35,6 +26,8 @@ public:
 		Static = 2,
 	};
 
+	Runtime& GetRuntime();
+
 private:
 	struct Variable {
 		Value VarValue;
@@ -43,10 +36,11 @@ private:
 	struct Function {
 		int ArgCount;
 		std::unique_ptr<BlockExpression> Code;
-		std::function<Value(Interpreter&, std::vector<std::unique_ptr<Expression>>&)> NativeCode;
+		std::function<Value(Interpreter&, std::vector<Value>&)> NativeCode;
 	};
 	std::unordered_map<std::string, Variable> m_Variables;
 	std::unordered_map<std::string, Function> m_Functions;
+	Runtime m_Runtime;
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(Interpreter::VariableFlags);

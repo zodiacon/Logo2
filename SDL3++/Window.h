@@ -6,7 +6,7 @@
 
 namespace SDL3 {
 	enum class WindowFlags {
-		None =				0,
+		Default =				0,
 		FullScreen =		SDL_WINDOW_FULLSCREEN,
 		OpenGL =			SDL_WINDOW_OPENGL,
 		Occluded =			SDL_WINDOW_OCCLUDED,
@@ -42,7 +42,7 @@ namespace SDL3 {
 	public:
 		using SDLObject::SDLObject;
 
-		Window(const char* title, int width, int height, WindowFlags flags);
+		Window(const char* title, int width, int height, WindowFlags flags = WindowFlags::Default);
 		Window(const char* title, int x, int y, int width, int height, WindowFlags flags);
 		Window(Window* parent, int offsetX, int offsetY, int width, int height, WindowFlags flags);
 

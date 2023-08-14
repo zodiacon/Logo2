@@ -135,10 +135,12 @@ private:
 
 class InvokeFunctionExpression : public Expression {
 public:
-	InvokeFunctionExpression(std::unique_ptr<Expression> obj, std::vector<std::unique_ptr<Expression>> args);
+	InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
 	Value Accept(Interpreter* visitor) const override;
+	std::string const& Name() const;
+	std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 
 private:
-	std::unique_ptr<Expression> m_Invoker;
+	std::string m_Name;
 	std::vector<std::unique_ptr<Expression>> m_Arguments;
 };

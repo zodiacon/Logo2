@@ -10,5 +10,6 @@
 #include <variant>
 #include <cassert>
 #include <type_traits>
+#include <SDL.h>
 
 

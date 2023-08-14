@@ -23,7 +23,7 @@ namespace SDL3 {
 			return *this;
 		}
 
-		SDLObject(T* p, bool owner) : m_p(p), m_Owner(owner) {}
+		SDLObject(T* p = nullptr, bool owner = true) : m_p(p), m_Owner(owner) {}
 
 		~SDLObject() {
 			if(m_Owner && m_p)
@@ -54,7 +54,6 @@ namespace SDL3 {
 			m_Owner = true;
 		}
 
-		SDLObject() : m_p(nullptr), m_Owner(false) {}
 
 	private:
 		T* m_p;

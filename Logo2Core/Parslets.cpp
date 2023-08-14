@@ -96,5 +96,5 @@ std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::un
 		next = parser.Peek();
 	}
 	parser.Next();		// eat close paren
-	return std::make_unique<InvokeFunctionExpression>(std::move(left), std::move(args));
+	return std::make_unique<InvokeFunctionExpression>(nameExpr->Name(), std::move(args));
 }

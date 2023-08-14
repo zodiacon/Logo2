@@ -3,10 +3,14 @@
 
 #include "pch.h"
 #include <Tokenizer.h>
-#include "Parser.h"
+#include <Token.h>
+#include <Parser.h>
 #include "Logo2Ast.h"
 #include "Interpreter.h"
 #include <print>
+#include <Errors.h>
+
+#pragma comment(lib, "SDL3")
 
 const char* TokenTypeToString(TokenType type) {
 	switch (type) {
@@ -31,7 +35,7 @@ int main() {
 		var k =true;
 		//const c = 12 * a;
 		a=b+1;
-		fd(20);
+		fd(40);
 		6+b*a
 		)";
 

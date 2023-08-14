@@ -9,9 +9,9 @@
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR cmdLine, int show) {
 	using namespace SDL3;
 
-	SDL sdl(Init::Everything);
+	SDL sdl(InitFlags::Everything);
 	
-	Window win("Test", 800, 600, WindowFlags::None);
+	Window win("Test", 800, 600);
 	Renderer renderer(win);
 
 	for (;;) {

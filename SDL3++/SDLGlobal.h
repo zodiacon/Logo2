@@ -5,7 +5,7 @@ namespace SDL3 {
 		const char* Error() const;
 	};
 
-	enum class Init {
+	enum class InitFlags {
 		None = 0,
 		Timer =		SDL_INIT_TIMER,
 		Audio =		SDL_INIT_AUDIO,
@@ -17,17 +17,19 @@ namespace SDL3 {
 		Sensor =	SDL_INIT_SENSOR,
 		Everything = Timer | Audio | Video | Joystick | Haptic | GamePad | Events | Sensor
 	};
-	DEFINE_ENUM_FLAG_OPERATORS(SDL3::Init);
+	DEFINE_ENUM_FLAG_OPERATORS(SDL3::InitFlags);
 
 	struct Event;
 
 	class SDL final {
 	public:
-		SDL(Init flags);
+		SDL(InitFlags flags);
 		~SDL();
 
-		Init GetInitFlags(Init flags = Init::None) const;
+		InitFlags GetInitFlags(InitFlags flags = InitFlags::Everything) const;
 		
+		static bool Init(InitFlags flags = InitFlags::Everything);
+		static void Term();
 		static bool PollEvent(Event& evt);
 		static void EnableExceptions(bool enable);
 		static bool Check(int error);

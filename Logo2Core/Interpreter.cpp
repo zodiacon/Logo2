@@ -1,15 +1,18 @@
 #include "pch.h"
 #include "Interpreter.h"
+#include <Errors.h>
 
 Interpreter::Interpreter() {
     Function f;
     f.ArgCount = 1;
     f.NativeCode = [](auto& intr, auto& args) -> Value {
-        //auto& t = intr.GetCurrentTurtle();
-        //t.Forward(args[0]->Accept(&intr));
+        auto& t = intr.GetRuntime().GetTurtle();
+        t.Forward(args[0].ToFloat());
         return Value();
         };
     m_Functions.insert({ "fd", std::move(f) });
+
+    m_Runtime.Init();
 }
 
 
@@ -101,6 +104,20 @@ Value Interpreter::VisitPostfix(PostfixExpression const* expr) {
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
+    if (auto it = m_Functions.find(expr->Name()); it != m_Functions.end()) {
+        auto& f = it->second;
+        std::vector<Value> args;
+        for (auto& arg : expr->Arguments()) {
+            args.push_back(arg->Accept(this));
+        }
+        if (f.NativeCode)
+            return f.NativeCode(*this, args);
+    }
+
     return Value();
+}
+
+Runtime& Interpreter::GetRuntime() {
+    return m_Runtime;
 }
 

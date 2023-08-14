@@ -2,7 +2,7 @@
 #include "SDLGlobal.h"
 #include "SimpleTypes.h"
 
-SDL3::SDL::SDL(Init flags) {
+SDL3::SDL::SDL(InitFlags flags) {
 	if (SDL_Init(static_cast<SDL_InitFlags>(flags)) < 0)
 		throw SDLException();
 }
@@ -11,8 +11,16 @@ SDL3::SDL::~SDL() {
 	SDL_Quit();
 }
 
-SDL3::Init SDL3::SDL::GetInitFlags(Init flags) const {
-	return static_cast<Init>(SDL_WasInit(static_cast<SDL_InitFlags>(flags)));
+SDL3::InitFlags SDL3::SDL::GetInitFlags(InitFlags flags) const {
+	return static_cast<InitFlags>(SDL_WasInit(static_cast<SDL_InitFlags>(flags)));
+}
+
+bool SDL3::SDL::Init(InitFlags flags) {
+	return SDL_Init(static_cast<SDL_InitFlags>(flags)) == 0;
+}
+
+void SDL3::SDL::Term() {
+	SDL_Quit();
 }
 
 bool SDL3::SDL::PollEvent(Event& evt) {
