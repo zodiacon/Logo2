@@ -35,8 +35,13 @@ int main() {
 		var k =true;
 		//const c = 12 * a;
 		a=b+1;
-		fd(40);
-		6+b*a
+		repeat(18) {
+			repeat(4) {
+				fd(80);
+				rt(90);
+			}
+			rt(20);
+		}
 		)";
 
 		t.Tokenize(code);

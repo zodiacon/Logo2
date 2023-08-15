@@ -7,6 +7,8 @@ struct Value {
 	Value(nullptr_t = nullptr) : m_Value(nullptr) {}
 	Value(std::string s) : m_Value(std::move(s)) {}
 
+	bool IsInteger() const;
+
 	float ToFloat() const;
 
 	friend Value operator+(Value const& left, Value const& right);

@@ -19,6 +19,7 @@ public:
 	Value VisitAssign(AssignExpression const* expr);
 	Value VisitPostfix(PostfixExpression const* expr);
 	Value VisitInvokeFunction(InvokeFunctionExpression const* expr);
+	Value VisitRepeat(RepeatStatement const* expr);
 
 	enum class VariableFlags {
 		None,

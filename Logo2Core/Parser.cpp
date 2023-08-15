@@ -96,6 +96,55 @@ std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
 	return std::make_unique<VarStatement>(name.Lexeme, constant, std::move(init));
 }
 
+std::unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
+	Next();		// eat "repeat"
+	if (!Match(TokenType::OpenParen)) {
+		AddError(ParserError(ParseErrorType::OpenParenExpected, Peek()));
+	}
+	auto times = ParseExpression();
+	if (!Match(TokenType::CloseParen)) {
+		AddError(ParserError(ParseErrorType::CloseParenExpected, Peek()));
+	}
+
+	auto block = ParseBlock();
+	return std::make_unique<RepeatStatement>(std::move(times), std::move(block));
+}
+
+std::unique_ptr<BlockExpression> Parser::ParseBlock() {
+	if (!Match(TokenType::OpenBrace))
+		AddError(ParserError(ParseErrorType::OpenBraceExpected, Peek()));
+
+	auto block = std::make_unique<BlockExpression>();
+	while (Peek().Type != TokenType::CloseBrace) {
+		auto stmt = ParseStatement();
+		if (!stmt)
+			break;
+		block->Add(std::move(stmt));
+	}
+	Next();		// eat close brace
+	return block;
+}
+
+std::unique_ptr<Statement> Parser::ParseStatement() {
+	auto peek = Peek();
+	if (peek.Type == TokenType::Invalid) {
+		return nullptr;
+	}
+
+	switch (peek.Type) {
+		case TokenType::Keyword_Var: return ParseVarConstStatement(false);
+		case TokenType::Keyword_Const: return ParseVarConstStatement(true);
+		case TokenType::Keyword_Repeat: return ParseRepeatStatement();
+	}
+	auto expr = ParseExpression();
+	if (expr) {
+		Match(TokenType::SemiColon);
+		return std::make_unique<ExpressionStatement>(std::move(expr));
+	}
+	AddError(ParserError(ParseErrorType::InvalidStatement, peek));
+	return nullptr;
+}
+
 void Parser::Init() {
 	std::vector<std::pair<std::string, TokenType>> tokens{
 		{ "+", TokenType::Add },
@@ -103,7 +152,6 @@ void Parser::Init() {
 		{ "*", TokenType::Mul },
 		{ "/", TokenType::Div },
 		{ "%", TokenType::Mod },
-		{ "if", TokenType::Keyword_If },
 		{ "**", TokenType::Power },
 		{ "(", TokenType::OpenParen },
 		{ ")", TokenType::CloseParen },
@@ -159,17 +207,10 @@ void Parser::Init() {
 std::unique_ptr<LogoAstNode> Parser::DoParse() {
 	auto block = std::make_unique<BlockExpression>();
 	while (true) {
-		auto peek = Peek();
-		if (peek.Type == TokenType::Invalid)
+		auto stmt = ParseStatement();
+		if (stmt == nullptr)
 			break;
-		switch (peek.Type) {
-			case TokenType::Keyword_Var: block->Add(ParseVarConstStatement(false)); break;
-			case TokenType::Keyword_Const: block->Add(ParseVarConstStatement(true)); break;
-			default: 
-				block->Add(ParseExpression()); 
-				Match(TokenType::SemiColon);
-				break;
-		}
+		block->Add(std::move(stmt));
 	}
 	return block;
 }

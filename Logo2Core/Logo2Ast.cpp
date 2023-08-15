@@ -164,3 +164,30 @@ std::string const& InvokeFunctionExpression::Name() const {
 std::vector<std::unique_ptr<Expression>> const& InvokeFunctionExpression::Arguments() const {
 	return m_Arguments;
 }
+
+RepeatStatement::RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body) : 
+	m_Count(std::move(count)), m_Block(std::move(body)) {
+}
+
+Value RepeatStatement::Accept(Interpreter* visitor) const {
+	return visitor->VisitRepeat(this);
+}
+
+Expression const* RepeatStatement::Count() const {
+	return m_Count.get();
+}
+
+BlockExpression const* RepeatStatement::Block() const {
+	return m_Block.get();
+}
+
+ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(std::move(expr)) {
+}
+
+Value ExpressionStatement::Accept(Interpreter* visitor) const {
+	return m_Expr->Accept(visitor);
+}
+
+Expression const* ExpressionStatement::Expr() const {
+	return m_Expr.get();
+}

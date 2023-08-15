@@ -24,6 +24,11 @@ enum class ParseErrorType {
 	DuplicateDefinition,
 	UndefinedSymbol,
 	CannotModifyConst,
+	OpenParenExpected,
+	CloseParenExpected,
+	OpenBraceExpected,
+	CloseBraceExpected,
+	InvalidStatement,
 };
 
 struct ParserError {
@@ -46,6 +51,9 @@ public:
 	std::unique_ptr<Expression> ParseExpression(int precedence = 0);
 	std::unique_ptr<VarStatement> ParseVarConstStatement(bool constant);
 	std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration();
+	std::unique_ptr<RepeatStatement> ParseRepeatStatement();
+	std::unique_ptr<BlockExpression> ParseBlock();
+	std::unique_ptr<Statement> ParseStatement();
 
 	Token Next();
 	Token Peek() const;

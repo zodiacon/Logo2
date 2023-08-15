@@ -14,6 +14,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR cmdLine, int show) {
 	Window win("Test", 800, 600);
 	Renderer renderer(win);
 
+	float x = 800;
 	for (;;) {
 		Event evt;
 		evt.Poll();
@@ -23,8 +24,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR cmdLine, int show) {
 		renderer.SetDrawColor(0, 0, 128, 255);
 		renderer.Clear();
 		renderer.SetDrawColor(25, 255, 0, 255);
-		renderer.Line(0, 0, 800, 600);
+		renderer.Line(0, 0, x, 600);
 		renderer.Present();
+		x -= 5;
+		::Sleep(300);
 	}
 
 	return 0;

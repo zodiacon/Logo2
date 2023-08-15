@@ -2,6 +2,10 @@
 #include "Value.h"
 #include <Errors.h>
 
+bool Value::IsInteger() const {
+	return m_Value.index() == 0;
+}
+
 float Value::ToFloat() const {
 	switch (m_Value.index()) {
 		case 0: return (float)Integer();

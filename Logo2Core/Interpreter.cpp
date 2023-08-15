@@ -11,6 +11,12 @@ Interpreter::Interpreter(Runtime& rt) : m_Runtime(rt) {
         return Value();
         };
     m_Functions.insert({ "fd", std::move(f) });
+    f.NativeCode = [](auto& intr, auto& args) -> Value {
+        auto& t = intr.GetRuntime().GetTurtle();
+        t.Rotate(args[0].ToFloat());
+        return Value();
+        };
+    m_Functions.insert({ "rt", std::move(f) });
 }
 
 
@@ -113,6 +119,18 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     }
 
     return Value();
+}
+
+Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
+    auto count = expr->Count()->Accept(this);
+    if (!count.IsInteger())
+        throw RuntimeError(ErrorType::TypeMismatch, expr->Count());
+
+    auto n = count.Integer();
+    while (n-- > 0) {
+        expr->Block()->Accept(this);
+    }
+    return nullptr;     // repeat has no return value
 }
 
 Runtime& Interpreter::GetRuntime() {

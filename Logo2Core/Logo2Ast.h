@@ -22,7 +22,20 @@ public:
 	}
 };
 
+class Statement abstract : public LogoAstNode {
+};
+
 class Expression abstract : public LogoAstNode {
+};
+
+class ExpressionStatement final : public Statement {
+public:
+	explicit ExpressionStatement(std::unique_ptr<Expression> expr);
+	virtual Value Accept(Interpreter* visitor) const;
+	Expression const* Expr() const;
+
+private:
+	std::unique_ptr<Expression> m_Expr;
 };
 
 class AssignExpression : public Expression {
@@ -37,7 +50,7 @@ private:
 	std::unique_ptr<Expression> m_Expr;
 };
 
-class BlockExpression : public LogoAstNode {
+class BlockExpression : public Expression {
 public:
 	void Add(std::unique_ptr<LogoAstNode> node);
 	Value Accept(Interpreter* visitor) const override;
@@ -48,7 +61,7 @@ private:
 	std::vector<std::unique_ptr<LogoAstNode>> m_Stmts;
 };
 
-class VarStatement : public LogoAstNode {
+class VarStatement : public Statement {
 public:
 	VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
 	Value Accept(Interpreter* visitor) const override;
@@ -62,6 +75,19 @@ private:
 	std::string m_Name;
 	std::unique_ptr<Expression> m_Init;
 	bool m_IsConst;
+};
+
+class RepeatStatement : public Statement {
+public:
+	RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body);
+	Value Accept(Interpreter* visitor) const override;
+
+	Expression const* Count() const;
+	BlockExpression const* Block() const;
+
+private:
+	std::unique_ptr<Expression> m_Count;
+	std::unique_ptr<BlockExpression> m_Block;
 };
 
 class FunctionDeclaration : public LogoAstNode {
