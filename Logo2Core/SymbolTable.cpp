@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "SymbolTable.h"
 
+using namespace Logo2;
+
 SymbolTable::SymbolTable(SymbolTable* parent) : m_Parent(parent) {
 }
 

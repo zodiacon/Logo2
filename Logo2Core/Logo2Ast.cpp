@@ -2,6 +2,8 @@
 #include "Logo2Ast.h"
 #include "Interpreter.h"
 
+using namespace Logo2;
+
 BinaryExpression::BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right) 
 	: m_Left(std::move(left)), m_Right(std::move(right)), m_Operator(std::move(op)) {
 }
@@ -22,7 +24,7 @@ Expression* BinaryExpression::Right() const {
 	return m_Right.get();
 }
 
-Token const& BinaryExpression::Operator() const {
+Logo2::Token const& BinaryExpression::Operator() const {
 	return m_Operator;
 }
 

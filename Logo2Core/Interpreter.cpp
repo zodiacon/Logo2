@@ -1,24 +1,9 @@
 #include "pch.h"
 #include "Interpreter.h"
 #include <Errors.h>
+#include "Runtime.h"
 
-Interpreter::Interpreter(Runtime& rt) : m_Runtime(rt) {
-    Function f;
-    f.ArgCount = 1;
-    f.NativeCode = [](auto& intr, auto& args) -> Value {
-        auto& t = intr.GetRuntime().GetTurtle();
-        t.Forward(args[0].ToFloat());
-        return Value();
-        };
-    m_Functions.insert({ "fd", std::move(f) });
-    f.NativeCode = [](auto& intr, auto& args) -> Value {
-        auto& t = intr.GetRuntime().GetTurtle();
-        t.Rotate(args[0].ToFloat());
-        return Value();
-        };
-    m_Functions.insert({ "rt", std::move(f) });
-}
-
+using namespace Logo2;
 
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
     auto& lit = expr->Literal();
@@ -116,6 +101,9 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
         }
         if (f.NativeCode)
             return f.NativeCode(*this, args);
+        else if (f.Code)
+            return f.Code->Accept(this);
+        assert(false);
     }
 
     return Value();
@@ -133,7 +121,11 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
     return nullptr;     // repeat has no return value
 }
 
-Runtime& Interpreter::GetRuntime() {
-    return m_Runtime;
+bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {
+    Function f;
+    f.ArgCount = arity;
+    f.NativeCode = nf;
+    return m_Functions.insert({ std::move(name), std::move(f) }).second;
 }
+
 

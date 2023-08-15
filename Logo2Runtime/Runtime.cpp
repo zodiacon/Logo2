@@ -1,34 +1,36 @@
 #include "pch.h"
 #include "Runtime.h"
-#include <SimpleTypes.h>
+#include <Interpreter.h>
 
-Runtime::Runtime() : m_Turtle(m_Render) {
-	Init();
-}
+using namespace Logo2;
 
-bool Runtime::Init() {
-	SDL3::SDL::Init();
-	m_Window = SDL3::Window("Logo2 Window", 800, 600);
-	m_Render = SDL3::Renderer(m_Window);
-	m_Turtle.SetCenter(400, 300);
+Runtime::Runtime(Interpreter& inter) {
+    inter.AddNativeFunction("fd", 1, [this](auto& intr, auto& args) -> Value {
+        auto& t = GetTurtle();
+        t.Forward(args[0].ToFloat());
+        return Value();
+        });
+    inter.AddNativeFunction("rt", 1, [this](auto& intr, auto& args) -> Value {
+        auto& t = GetTurtle();
+        t.Rotate(args[0].ToFloat());
+        return Value();
+        });
+    inter.AddNativeFunction("penup", 0, [this](auto& intr, auto& args) -> Value {
+        GetTurtle().Penup();
+        return Value();
+        });
+    inter.AddNativeFunction("pendown", 0, [this](auto& intr, auto& args) -> Value {
+        GetTurtle().Pendown();
+        return Value();
+        });
+    inter.AddNativeFunction("pencolor", 3, [this](auto& intr, auto& args) -> Value {
+        GetTurtle().SetPenColor((BYTE)args[0].ToInteger(), (BYTE)args[1].ToInteger(), (BYTE)args[2].ToInteger());
+        return Value();
+        });
 
-	return true;
 }
 
 Turtle& Runtime::GetTurtle() {
 	return m_Turtle;
 }
 
-bool Runtime::PumpMessages() {
-	SDL3::Event evt;
-	if (evt.Poll()) {
-		if (evt.Type() == SDL3::EventType::Quit)
-			return false;
-	}
-	return true;
-}
-
-void Runtime::Draw() {
-	m_Turtle.Draw();
-	m_Render.Present();
-}

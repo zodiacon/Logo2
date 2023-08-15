@@ -1,28 +1,24 @@
 #include "pch.h"
 #include "Turtle.h"
 #include <cmath>
-#include <Renderer.h>
 #include <numbers>
 
-Turtle::Turtle(SDL3::Renderer& r) : m_Render(r) {
-	
-}
+using namespace Gdiplus;
+using namespace Logo2;
 
-void Turtle::Draw() {
-	m_Render.SetDrawColor(255, 255, 255, 255);
-	m_Render.Clear();
-	m_Render.SetDrawColor(0, 0, 0, 255);
-
-	for (auto& [p1, p2] : m_Lines)
-		DrawLine(p1, p2);
+Turtle::Turtle() {
 }
 
 void Turtle::Forward(float amount) {
 	auto state = Save();
 	m_State.X += std::cos(ToRad(m_State.Heading)) * amount * m_Step;
 	m_State.Y -= std::sin(ToRad(m_State.Heading)) * amount * m_Step;
-	if (!m_Penup)
-		m_Lines.push_back({ { state.X, state.Y }, { m_State.X, m_State.Y } });
+	if (!m_Penup) {
+		TurtleCommand cmd{ TurtleCommandType::DrawLine };
+		cmd.Line.From = Point2D(state.X, state.Y);
+		cmd.Line.To = Point2D(m_State.X, m_State.Y);
+		m_Commands.push_back(cmd);
+	}
 }
 
 void Turtle::Back(float amount) {
@@ -74,10 +70,14 @@ float Turtle::GetStep() const {
 	return m_Step;
 }
 
+void Logo2::Turtle::SetPenColor(BYTE r, BYTE g, BYTE b, BYTE a) {
+	TurtleCommand cmd;
+	cmd.Type = TurtleCommandType::SetColor;
+	cmd.Color = (a << 24) | (r << 16) | (g << 8) | b;
+	m_Commands.push_back(cmd);
+}
+
 float Turtle::ToRad(float angle) const {
 	return m_Radians ? angle : angle * std::numbers::pi_v<float> / 180;
 }
 
-void Turtle::DrawLine(SDL3::FPoint const& from, SDL3::FPoint const& to) const {
-	m_Render.Line(m_CenterX + from.x, m_CenterY + from.y, m_CenterX + to.x, m_CenterY + to.y);
-}

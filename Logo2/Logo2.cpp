@@ -9,21 +9,21 @@
 #include "Interpreter.h"
 #include <print>
 #include <Errors.h>
+#include <Runtime.h>
 
-#pragma comment(lib, "SDL3")
-
-const char* TokenTypeToString(TokenType type) {
+const char* TokenTypeToString(Logo2::TokenType type) {
 	switch (type) {
-		case TokenType::Integer: return "Integer";
-		case TokenType::Real: return "Real";
-		case TokenType::Identifier: return "Identifier";
-		case TokenType::String: return "String";
+		case Logo2::TokenType::Integer: return "Integer";
+		case Logo2::TokenType::Real: return "Real";
+		case Logo2::TokenType::Identifier: return "Identifier";
+		case Logo2::TokenType::String: return "String";
 	}
 	return "";
 }
 
 int main() {
 	using namespace std;
+	using namespace Logo2;
 
 	Tokenizer t;
 	Parser parser(t);
@@ -34,20 +34,20 @@ int main() {
 		var b=a+4;
 		var k =true;
 		//const c = 12 * a;
-		a=b+1;
+		var x = 0;
 		repeat(18) {
-			repeat(4) {
-				fd(80);
-				rt(90);
+			repeat(30) {
+				fd(40);
+				rt(12);
 			}
 			rt(20);
 		}
 		)";
 
-		t.Tokenize(code);
-		for (auto next = t.Next(); next.Type != TokenType::Invalid; next = t.Next()) {
-			printf("(%d,%d): %s (%s)\n", next.Line, next.Col, next.Lexeme.c_str(), TokenTypeToString(next.Type));
-		}
+		//t.Tokenize(code);
+		//for (auto next = t.Next(); next.Type != TokenType::Invalid; next = t.Next()) {
+		//	printf("(%d,%d): %s (%s)\n", next.Line, next.Col, next.Lexeme.c_str(), TokenTypeToString(next.Type));
+		//}
 
 		auto ast = parser.Parse(code);
 		std::println("{}", ast->ToString());
@@ -57,17 +57,13 @@ int main() {
 			}
 		}
 		else {
-			Runtime rt;
-			Interpreter inter(rt);
+			Interpreter inter;
 			try {
 				auto result = ast->Accept(&inter);
 				std::println("result: {}", result.ToString());
 			}
 			catch (RuntimeError const& err) {
 				printf("Error! %d\n", (int)err.Error);
-			}
-			while (rt.PumpMessages()) {
-				rt.Draw();
 			}
 		}
 	}

@@ -5,18 +5,18 @@
 #include "Tokenizer.h"
 #include <fstream>
 
-Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
+Logo2::Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	Init();
 	m_Symbols.push(SymbolTable());
 }
 
-std::unique_ptr<LogoAstNode> Parser::Parse(std::string text, int line) {
+std::unique_ptr<Logo2::LogoAstNode> Logo2::Parser::Parse(std::string text, int line) {
 	m_Tokenizer.Tokenize(std::move(text), line);
 	m_Errors.clear();
 	return DoParse();
 }
 
-std::unique_ptr<LogoAstNode> Parser::ParseFile(std::string_view filename) {
+std::unique_ptr<Logo2::LogoAstNode> Logo2::Parser::ParseFile(std::string_view filename) {
 	std::ifstream stm(filename.data());
 	if (!stm.good())
 		return nullptr;
@@ -31,27 +31,27 @@ std::unique_ptr<LogoAstNode> Parser::ParseFile(std::string_view filename) {
 	return Parse(std::move(text));
 }
 
-bool Parser::AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet) {
+bool Logo2::Parser::AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet) {
 	return m_InfixParslets.insert({ type, std::move(parslet) }).second;
 }
 
-bool Parser::AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet) {
+bool Logo2::Parser::AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, std::move(parslet) }).second;
 }
 
-void Parser::AddError(ParserError err) {
+void Logo2::Parser::AddError(ParserError err) {
 	m_Errors.emplace_back(std::move(err));
 }
 
-bool Parser::HasErrors() const {
+bool Logo2::Parser::HasErrors() const {
 	return !m_Errors.empty();
 }
 
-std::span<const ParserError> Parser::Errors() const {
+std::span<const Logo2::ParserError> Logo2::Parser::Errors() const {
 	return m_Errors;
 }
 
-std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {
+std::unique_ptr<Logo2::Expression> Logo2::Parser::ParseExpression(int precedence) {
 	auto token = Next();
 	if (auto it = m_PrefixParslets.find(token.Type); it != m_PrefixParslets.end()) {
 		auto left = it->second->Parse(*this, token);
@@ -67,7 +67,7 @@ std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 	throw ParserError(ParseErrorType::UnknownOperator, token);
 }
 
-std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
+std::unique_ptr<Logo2::VarStatement> Logo2::Parser::ParseVarConstStatement(bool constant) {
 	auto next = Next();		// var or const
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
@@ -96,7 +96,7 @@ std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
 	return std::make_unique<VarStatement>(name.Lexeme, constant, std::move(init));
 }
 
-std::unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
+std::unique_ptr<Logo2::RepeatStatement> Logo2::Parser::ParseRepeatStatement() {
 	Next();		// eat "repeat"
 	if (!Match(TokenType::OpenParen)) {
 		AddError(ParserError(ParseErrorType::OpenParenExpected, Peek()));
@@ -110,10 +110,11 @@ std::unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
 	return std::make_unique<RepeatStatement>(std::move(times), std::move(block));
 }
 
-std::unique_ptr<BlockExpression> Parser::ParseBlock() {
+std::unique_ptr<Logo2::BlockExpression> Logo2::Parser::ParseBlock() {
 	if (!Match(TokenType::OpenBrace))
 		AddError(ParserError(ParseErrorType::OpenBraceExpected, Peek()));
 
+	m_Symbols.push(SymbolTable());
 	auto block = std::make_unique<BlockExpression>();
 	while (Peek().Type != TokenType::CloseBrace) {
 		auto stmt = ParseStatement();
@@ -122,10 +123,11 @@ std::unique_ptr<BlockExpression> Parser::ParseBlock() {
 		block->Add(std::move(stmt));
 	}
 	Next();		// eat close brace
+	m_Symbols.pop();
 	return block;
 }
 
-std::unique_ptr<Statement> Parser::ParseStatement() {
+std::unique_ptr<Logo2::Statement> Logo2::Parser::ParseStatement() {
 	auto peek = Peek();
 	if (peek.Type == TokenType::Invalid) {
 		return nullptr;
@@ -145,7 +147,7 @@ std::unique_ptr<Statement> Parser::ParseStatement() {
 	return nullptr;
 }
 
-void Parser::Init() {
+void Logo2::Parser::Init() {
 	std::vector<std::pair<std::string, TokenType>> tokens{
 		{ "+", TokenType::Add },
 		{ "-", TokenType::Sub },
@@ -204,7 +206,7 @@ void Parser::Init() {
 
 }
 
-std::unique_ptr<LogoAstNode> Parser::DoParse() {
+std::unique_ptr<Logo2::LogoAstNode> Logo2::Parser::DoParse() {
 	auto block = std::make_unique<BlockExpression>();
 	while (true) {
 		auto stmt = ParseStatement();
@@ -215,22 +217,22 @@ std::unique_ptr<LogoAstNode> Parser::DoParse() {
 	return block;
 }
 
-int Parser::GetPrecedence() const {
+int Logo2::Parser::GetPrecedence() const {
 	auto token = Peek();
 	if (auto it = m_InfixParslets.find(token.Type); it != m_InfixParslets.end())
 		return it->second->Precedence();
 	return 0;
 }
 
-Token Parser::Next() {
+Logo2::Token Logo2::Parser::Next() {
 	return m_Tokenizer.Next();
 }
 
-Token Parser::Peek() const {
+Logo2::Token Logo2::Parser::Peek() const {
 	return m_Tokenizer.Peek();
 }
 
-bool Parser::Match(TokenType type, bool consume) {
+bool Logo2::Parser::Match(TokenType type, bool consume) {
 	auto next = Peek();
 	if (consume && next.Type == type) {
 		Next();
@@ -239,11 +241,11 @@ bool Parser::Match(TokenType type, bool consume) {
 	return next.Type == type;
 }
 
-bool Parser::AddSymbol(Symbol sym) {
+bool Logo2::Parser::AddSymbol(Logo2::Symbol sym) {
 	return m_Symbols.top().AddSymbol(std::move(sym));
 }
 
-Symbol const* Parser::FindSymbol(std::string const& name) const {
+Logo2::Symbol const* Logo2::Parser::FindSymbol(std::string const& name) const {
 	return m_Symbols.top().FindSymbol(name);
 }
 

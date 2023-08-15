@@ -79,7 +79,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime;..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime;..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,7 +115,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime;..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime;..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core;..\Logo2Runtime</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

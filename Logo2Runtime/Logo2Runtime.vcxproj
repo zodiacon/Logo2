@@ -78,7 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -97,7 +97,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -116,7 +116,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -135,7 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\SDL3++</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Logo2Core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -164,8 +164,8 @@
     <ClCompile Include="Turtle.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SDL3++\SDL3++.vcxproj">
-      <Project>{3d9859cf-9b9b-4b66-960c-250d5badd1fb}</Project>
+    <ProjectReference Include="..\Logo2Core\Logo2Core.vcxproj">
+      <Project>{b9f88cda-77b1-4b54-91fe-fd37f8c9522f}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

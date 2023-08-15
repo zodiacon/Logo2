@@ -2,6 +2,8 @@
 #include "Parslets.h"
 #include "Parser.h"
 
+using namespace Logo2;
+
 PostfixOperatorParslet::PostfixOperatorParslet(int precedence) : m_Precedence(precedence) {
 }
 

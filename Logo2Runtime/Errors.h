@@ -1,14 +1,16 @@
 #pragma once
 
-class LogoAstNode;
+namespace Logo2 {
+	class LogoAstNode;
 
-enum class ErrorType {
-	Success,
-	CannotAssignConst,
-	TypeMismatch,
-};
+	enum class ErrorType {
+		Success,
+		CannotAssignConst,
+		TypeMismatch,
+	};
 
-struct RuntimeError {
-	ErrorType Error;
-	LogoAstNode const* Node;
-};
+	struct RuntimeError {
+		ErrorType Error;
+		LogoAstNode const* Node;
+	};
+}

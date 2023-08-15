@@ -3,170 +3,172 @@
 #include "Token.h"
 #include "Value.h"
 
-class Interpreter;
+namespace Logo2 {
+	class Interpreter;
 
-enum class NodeType {
-	Unknown = -1,
-	Name,
-};
+	enum class NodeType {
+		Unknown = -1,
+		Name,
+	};
 
-class LogoAstNode abstract {
-public:
-	virtual std::string ToString() const {
-		return "";
-	}
+	class LogoAstNode abstract {
+	public:
+		virtual std::string ToString() const {
+			return "";
+		}
 
-	virtual Value Accept(Interpreter* visitor) const = 0;
-	virtual NodeType Type() const {
-		return NodeType::Unknown;
-	}
-};
+		virtual Value Accept(Interpreter* visitor) const = 0;
+		virtual NodeType Type() const {
+			return NodeType::Unknown;
+		}
+	};
 
-class Statement abstract : public LogoAstNode {
-};
+	class Statement abstract : public LogoAstNode {
+	};
 
-class Expression abstract : public LogoAstNode {
-};
+	class Expression abstract : public LogoAstNode {
+	};
 
-class ExpressionStatement final : public Statement {
-public:
-	explicit ExpressionStatement(std::unique_ptr<Expression> expr);
-	virtual Value Accept(Interpreter* visitor) const;
-	Expression const* Expr() const;
+	class ExpressionStatement final : public Statement {
+	public:
+		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
+		virtual Value Accept(Interpreter* visitor) const;
+		Expression const* Expr() const;
 
-private:
-	std::unique_ptr<Expression> m_Expr;
-};
+	private:
+		std::unique_ptr<Expression> m_Expr;
+	};
 
-class AssignExpression : public Expression {
-public:
-	AssignExpression(std::string name, std::unique_ptr<Expression> expr);
-	Value Accept(Interpreter* visitor) const override;
-	std::string const& Variable() const;
-	Expression* const Value() const;
+	class AssignExpression : public Expression {
+	public:
+		AssignExpression(std::string name, std::unique_ptr<Expression> expr);
+		Value Accept(Interpreter* visitor) const override;
+		std::string const& Variable() const;
+		Expression* const Value() const;
 
-private:
-	std::string m_Name;
-	std::unique_ptr<Expression> m_Expr;
-};
+	private:
+		std::string m_Name;
+		std::unique_ptr<Expression> m_Expr;
+	};
 
-class BlockExpression : public Expression {
-public:
-	void Add(std::unique_ptr<LogoAstNode> node);
-	Value Accept(Interpreter* visitor) const override;
-	std::vector<LogoAstNode*> const Expressions() const;
-	std::string ToString() const override;
+	class BlockExpression : public Expression {
+	public:
+		void Add(std::unique_ptr<LogoAstNode> node);
+		Value Accept(Interpreter* visitor) const override;
+		std::vector<LogoAstNode*> const Expressions() const;
+		std::string ToString() const override;
 
-private:
-	std::vector<std::unique_ptr<LogoAstNode>> m_Stmts;
-};
+	private:
+		std::vector<std::unique_ptr<LogoAstNode>> m_Stmts;
+	};
 
-class VarStatement : public Statement {
-public:
-	VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
-	Value Accept(Interpreter* visitor) const override;
-	std::string ToString() const override;
+	class VarStatement : public Statement {
+	public:
+		VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
+		Value Accept(Interpreter* visitor) const override;
+		std::string ToString() const override;
 
-	std::string const& Name() const;
-	Expression const* Init() const;
-	bool IsConst() const;
+		std::string const& Name() const;
+		Expression const* Init() const;
+		bool IsConst() const;
 
-private:
-	std::string m_Name;
-	std::unique_ptr<Expression> m_Init;
-	bool m_IsConst;
-};
+	private:
+		std::string m_Name;
+		std::unique_ptr<Expression> m_Init;
+		bool m_IsConst;
+	};
 
-class RepeatStatement : public Statement {
-public:
-	RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body);
-	Value Accept(Interpreter* visitor) const override;
+	class RepeatStatement : public Statement {
+	public:
+		RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body);
+		Value Accept(Interpreter* visitor) const override;
 
-	Expression const* Count() const;
-	BlockExpression const* Block() const;
+		Expression const* Count() const;
+		BlockExpression const* Block() const;
 
-private:
-	std::unique_ptr<Expression> m_Count;
-	std::unique_ptr<BlockExpression> m_Block;
-};
+	private:
+		std::unique_ptr<Expression> m_Count;
+		std::unique_ptr<BlockExpression> m_Block;
+	};
 
-class FunctionDeclaration : public LogoAstNode {
-};
+	class FunctionDeclaration : public LogoAstNode {
+	};
 
-class PostfixExpression : public Expression {
-public:
-	PostfixExpression(std::unique_ptr<Expression> expr, Token token);
-	Value Accept(Interpreter* visitor) const override;
+	class PostfixExpression : public Expression {
+	public:
+		PostfixExpression(std::unique_ptr<Expression> expr, Token token);
+		Value Accept(Interpreter* visitor) const override;
 
-	Token const& Operator() const;
-	Expression const* Argument() const;
+		Token const& Operator() const;
+		Expression const* Argument() const;
 
-private:
-	Token m_Token;
-	std::unique_ptr<Expression> m_Expr;
-};
+	private:
+		Token m_Token;
+		std::unique_ptr<Expression> m_Expr;
+	};
 
-class BinaryExpression : public Expression {
-public:
-	BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right);
-	Value Accept(Interpreter* visitor) const override;
+	class BinaryExpression : public Expression {
+	public:
+		BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right);
+		Value Accept(Interpreter* visitor) const override;
 
-	std::string ToString() const override;
+		std::string ToString() const override;
 
-	Expression* Left() const;
-	Expression* Right() const;
-	Token const& Operator() const;
+		Expression* Left() const;
+		Expression* Right() const;
+		Token const& Operator() const;
 
-private:
-	std::unique_ptr<Expression> m_Left, m_Right;
-	Token m_Operator;
-};
+	private:
+		std::unique_ptr<Expression> m_Left, m_Right;
+		Token m_Operator;
+	};
 
-class UnaryExpression : public Expression {
-public:
-	UnaryExpression(Token op, std::unique_ptr<Expression> arg);
-	Value Accept(Interpreter* visitor) const override;
-	std::string ToString() const override;
-	Token const& Operator() const;
-	Expression* Arg() const;
+	class UnaryExpression : public Expression {
+	public:
+		UnaryExpression(Token op, std::unique_ptr<Expression> arg);
+		Value Accept(Interpreter* visitor) const override;
+		std::string ToString() const override;
+		Token const& Operator() const;
+		Expression* Arg() const;
 
-private:
-	std::unique_ptr<Expression> m_Arg;
-	Token m_Operator;
-};
+	private:
+		std::unique_ptr<Expression> m_Arg;
+		Token m_Operator;
+	};
 
-class LiteralExpression : public Expression {
-public:
-	explicit LiteralExpression(Token token);
-	Value Accept(Interpreter* visitor) const override;
+	class LiteralExpression : public Expression {
+	public:
+		explicit LiteralExpression(Token token);
+		Value Accept(Interpreter* visitor) const override;
 
-	std::string ToString() const override;
-	Token const& Literal() const;
+		std::string ToString() const override;
+		Token const& Literal() const;
 
-private:
-	Token m_Token;
-};
+	private:
+		Token m_Token;
+	};
 
-class NameExpression : public Expression {
-public:
-	explicit NameExpression(std::string name);
-	Value Accept(Interpreter* visitor) const override;
-	std::string const& Name() const;
-	NodeType Type() const override;
-	std::string ToString() const override;
+	class NameExpression : public Expression {
+	public:
+		explicit NameExpression(std::string name);
+		Value Accept(Interpreter* visitor) const override;
+		std::string const& Name() const;
+		NodeType Type() const override;
+		std::string ToString() const override;
 
-private:
-	std::string m_Name;
-};
+	private:
+		std::string m_Name;
+	};
 
-class InvokeFunctionExpression : public Expression {
-public:
-	InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
-	Value Accept(Interpreter* visitor) const override;
-	std::string const& Name() const;
-	std::vector<std::unique_ptr<Expression>> const& Arguments() const;
+	class InvokeFunctionExpression : public Expression {
+	public:
+		InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
+		Value Accept(Interpreter* visitor) const override;
+		std::string const& Name() const;
+		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 
-private:
-	std::string m_Name;
-	std::vector<std::unique_ptr<Expression>> m_Arguments;
-};
+	private:
+		std::string m_Name;
+		std::vector<std::unique_ptr<Expression>> m_Arguments;
+	};
+}
