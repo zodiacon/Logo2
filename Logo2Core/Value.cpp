@@ -112,10 +112,10 @@ namespace Logo2 {
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() + right.Integer();
 			case 1: return left.Real() + right.Integer();
-			case 16: return left.Integer() + right.Real();
-			case 17: return left.Real() + right.Real();
+			case 1 << 4: return left.Integer() + right.Real();
+			case 1 | (1 << 4): return left.Real() + right.Real();
 		}
-		return Value();
+		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
 	Value operator-(Value const& left, Value const& right) {
@@ -135,15 +135,27 @@ namespace Logo2 {
 			case 16: return left.Integer() * right.Real();
 			case 17: return left.Real() * right.Real();
 		}
-		return Value();
+		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
 	Value operator/(Value const& left, Value const& right) {
+		switch (right.Index()) {
+			case 0: 				
+				if (right.Integer() == 0)
+					throw RuntimeError(ErrorType::DivisionByZero);
+				break;
+			case 1:
+				if(right.Real() == 0)
+					throw RuntimeError(ErrorType::DivisionByZero);
+				break;
+			default:
+				throw RuntimeError(ErrorType::TypeMismatch);
+		}
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() / right.Integer();
 			case 1: return left.Real() / right.Integer();
-			case 16: return left.Integer() / right.Real();
-			case 17: return left.Real() / right.Real();
+			case 1 << 4: return left.Integer() / right.Real();
+			case 1 | (1 << 4): return left.Real() / right.Real();
 		}
 		return Value();
 	}
@@ -152,16 +164,18 @@ namespace Logo2 {
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() % right.Integer();
 		}
-		return Value();
+		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
 	std::partial_ordering operator<=>(Value const& left, Value const& right) {
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() <=> right.Integer();
 			case 1: return left.Real() <=> right.Integer();
-			case 16: return left.Integer() <=> right.Real();
-			case 17: return left.Real() <=> right.Real();
+			case 2: return (int)left.Boolean() <=> right.Integer();
+			case 1 << 4: return left.Integer() <=> right.Real();
+			case 1 | (1 << 4): return left.Real() <=> right.Real();
+			case 2 << 4: return left.Integer() <=> (int)right.Boolean();
 		}
-		return std::partial_ordering::unordered;
+		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 }

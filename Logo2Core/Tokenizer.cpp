@@ -156,6 +156,16 @@ Logo2::Token Logo2::Tokenizer::ParseOperator() {
 }
 
 Logo2::Token Logo2::Tokenizer::ParseString() {
-	assert(false);
-	return Token();
+	std::string lexeme;
+	while (*++m_Current && *m_Current != '\"') {
+		lexeme += *m_Current;
+		m_Col++;
+		if (*m_Current == '\n') {
+			Token token{ .Type = TokenType::Error, .Lexeme = "Missing closing quote", .Line = m_Line, .Col = m_Col };
+			m_Col = 1;
+			m_Line++;
+			return token;
+		}
+	}
+	return Token { .Type = TokenType::String, .Lexeme = lexeme, .Line = m_Line, .Col = m_Col - (int)lexeme.length(), };
 }

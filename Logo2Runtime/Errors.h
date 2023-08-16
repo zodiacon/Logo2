@@ -9,6 +9,7 @@ namespace Logo2 {
 		TypeMismatch,
 		ArgumentCountMismatch,
 		UndefinedFunction,
+		DivisionByZero,
 	};
 
 	struct RuntimeError {

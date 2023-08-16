@@ -7,7 +7,7 @@
 
 Logo2::Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	Init();
-	m_Symbols.push(SymbolTable());
+	m_Symbols.push(std::make_unique<SymbolTable>());
 }
 
 std::unique_ptr<Logo2::LogoAstNode> Logo2::Parser::Parse(std::string text, int line) {
@@ -116,7 +116,7 @@ std::unique_ptr<Logo2::BlockExpression> Logo2::Parser::ParseBlock() {
 	if (!Match(TokenType::OpenBrace))
 		AddError(ParserError(ParseErrorType::OpenBraceExpected, Peek()));
 
-	m_Symbols.push(SymbolTable());
+	m_Symbols.push(std::make_unique<SymbolTable>(m_Symbols.top().get()));
 	auto block = std::make_unique<BlockExpression>();
 	while (Peek().Type != TokenType::CloseBrace) {
 		auto stmt = ParseStatement();
@@ -262,11 +262,11 @@ bool Logo2::Parser::Match(TokenType type, bool consume) {
 }
 
 bool Logo2::Parser::AddSymbol(Logo2::Symbol sym) {
-	return m_Symbols.top().AddSymbol(std::move(sym));
+	return m_Symbols.top()->AddSymbol(std::move(sym));
 }
 
 Logo2::Symbol const* Logo2::Parser::FindSymbol(std::string const& name) const {
-	return m_Symbols.top().FindSymbol(name);
+	return m_Symbols.top()->FindSymbol(name);
 }
 
 

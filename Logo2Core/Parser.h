@@ -7,6 +7,7 @@
 #include "SymbolTable.h"
 
 namespace Logo2 {
+	class SymbolTable;
 	class Tokenizer;
 	struct Token;
 	enum class TokenType;
@@ -77,7 +78,7 @@ namespace Logo2 {
 		std::vector<ParserError> m_Errors;
 		std::vector<Token> m_Tokens;
 		size_t m_Current;
-		std::stack<SymbolTable> m_Symbols;
+		std::stack<std::unique_ptr<SymbolTable>> m_Symbols;
 	};
 
 }

@@ -40,6 +40,8 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
         case TokenType::NotEqual: return expr->Left()->Accept(this) != expr->Right()->Accept(this);
         case TokenType::LessThan: return expr->Left()->Accept(this) < expr->Right()->Accept(this);
         case TokenType::LessThanOrEqual: return expr->Left()->Accept(this) <= expr->Right()->Accept(this);
+        case TokenType::GreaterThan: return expr->Left()->Accept(this) > expr->Right()->Accept(this);
+        case TokenType::GreaterThanOrEqual: return expr->Left()->Accept(this) >= expr->Right()->Accept(this);
     }
     return Value();
 }
@@ -128,7 +130,7 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
 }
 
 Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
-    while (Eval(stmt->Condition()).Boolean()) {
+    while (Eval(stmt->Condition()).ToBoolean()) {
         Eval(stmt->Block());
     }
     return Value();

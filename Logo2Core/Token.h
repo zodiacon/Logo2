@@ -3,6 +3,7 @@
 namespace Logo2 {
 	enum class TokenType {
 		Invalid,
+		Error,
 		Integer,
 		Real,
 		String,
