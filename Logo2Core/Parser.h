@@ -57,6 +57,7 @@ namespace Logo2 {
 		std::unique_ptr<WhileStatement> ParseWhileStatement();
 		std::unique_ptr<BlockExpression> ParseBlock();
 		std::unique_ptr<Statement> ParseStatement();
+		std::unique_ptr<IfThenElseExpression> ParseIfThenElseExpression();
 
 		Token Next();
 		Token Peek() const;

@@ -104,9 +104,10 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> m_Block;
 	};
 
-	class IfElseExpression : public Expression {
+	class IfThenElseExpression : public Expression {
 	public:
-		IfElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr = nullptr);
+		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr = nullptr);
+		Value Accept(Interpreter* visitor) const override;
 
 		Expression const* Condition() const;
 		Expression const* Then() const;

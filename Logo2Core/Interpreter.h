@@ -23,6 +23,7 @@ namespace Logo2 {
 		Value VisitInvokeFunction(InvokeFunctionExpression const* expr);
 		Value VisitRepeat(RepeatStatement const* expr);
 		Value VisitWhile(WhileStatement const* stmt);
+		Value VisitIfThenElse(IfThenElseExpression const* expr);
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 

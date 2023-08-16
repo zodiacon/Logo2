@@ -134,6 +134,12 @@ Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
     return Value();
 }
 
+Value Logo2::Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
+    if (Eval(expr->Condition()).ToBoolean())
+        return Eval(expr->Then());
+    return expr->Else() ? Eval(expr->Else()) : nullptr;
+}
+
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {
     Function f;
     f.ArgCount = arity;

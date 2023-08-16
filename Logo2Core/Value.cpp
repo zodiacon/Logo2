@@ -23,6 +23,14 @@ namespace Logo2 {
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
+	bool Value::ToBoolean() const {
+		switch (m_Value.index()) {
+			case 0: return Integer() != 0;
+			case 2: return Boolean();
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
 	long long Value::ToInteger() const {
 		switch (m_Value.index()) {
 			case 0: return Integer();

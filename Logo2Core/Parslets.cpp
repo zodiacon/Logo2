@@ -100,3 +100,12 @@ std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::un
 	parser.Next();		// eat close paren
 	return std::make_unique<InvokeFunctionExpression>(nameExpr->Name(), std::move(args));
 }
+
+std::unique_ptr<Expression> Logo2::IfThenElseParslet::Parse(Parser& parser, Token const& token) {
+	auto cond = parser.ParseExpression();
+	auto then = parser.ParseBlock();
+	std::unique_ptr<Expression> elseExpr;
+	if (parser.Match(TokenType::Keyword_Else))
+		elseExpr = parser.ParseBlock();
+	return std::make_unique<IfThenElseExpression>(std::move(cond), std::move(then), std::move(elseExpr));
+}

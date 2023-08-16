@@ -159,6 +159,17 @@ void Logo2::Parser::Init() {
 		{ "/", TokenType::Div },
 		{ "%", TokenType::Mod },
 		{ "**", TokenType::Power },
+
+		{ "+=", TokenType::Assign_Add },
+		{ "-=", TokenType::Assign_Sub },
+		{ "*=", TokenType::Assign_Mul },
+		{ "/=", TokenType::Assign_Div },
+		{ "%=", TokenType::Assign_Mod },
+		{ "**=", TokenType::Assign_Power },
+		{ "&=", TokenType::Assign_And },
+		{ "|=", TokenType::Assign_Or },
+		{ "^=", TokenType::Assign_Xor },
+
 		{ "(", TokenType::OpenParen },
 		{ ")", TokenType::CloseParen },
 		{ "&", TokenType::And },
@@ -182,6 +193,7 @@ void Logo2::Parser::Init() {
 		{ "break", TokenType::Keyword_Break },
 		{ "continue", TokenType::Keyword_Continue },
 		{ "else", TokenType::Keyword_Else },
+		{ "fn", TokenType::Keyword_Fn },
 		{ "==", TokenType::Equal },
 		{ "!=", TokenType::NotEqual },
 		{ "<", TokenType::LessThan },
@@ -211,7 +223,7 @@ void Logo2::Parser::Init() {
 	AddParslet(TokenType::GreaterThan, std::make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::GreaterThanOrEqual, std::make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::OpenParen, std::make_unique<InvokeFunctionParslet>());
-
+	AddParslet(TokenType::Keyword_If, std::make_unique<IfThenElseParslet>());
 }
 
 std::unique_ptr<Logo2::LogoAstNode> Logo2::Parser::DoParse() {

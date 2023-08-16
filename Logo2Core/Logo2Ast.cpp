@@ -210,18 +210,22 @@ BlockExpression const* Logo2::WhileStatement::Block() const {
 	return m_Block.get();
 }
 
-Logo2::IfElseExpression::IfElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr) : 
+Logo2::IfThenElseExpression::IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr) : 
 	m_Condition(std::move(condition)), m_Then(std::move(thenExpr)), m_Else(std::move(elseExpr)) {
 }
 
-Expression const* Logo2::IfElseExpression::Condition() const {
+Value Logo2::IfThenElseExpression::Accept(Interpreter* visitor) const {
+	return visitor->VisitIfThenElse(this);
+}
+
+Expression const* Logo2::IfThenElseExpression::Condition() const {
 	return m_Condition.get();
 }
 
-Expression const* Logo2::IfElseExpression::Then() const {
+Expression const* Logo2::IfThenElseExpression::Then() const {
 	return m_Then.get();
 }
 
-Expression const* Logo2::IfElseExpression::Else() const {
+Expression const* Logo2::IfThenElseExpression::Else() const {
 	return m_Else.get();
 }
