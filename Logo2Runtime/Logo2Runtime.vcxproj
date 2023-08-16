@@ -151,6 +151,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="Turtle.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Logo2Runtime.cpp" />
@@ -162,6 +163,7 @@
     </ClCompile>
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="Turtle.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logo2Core\Logo2Core.vcxproj">

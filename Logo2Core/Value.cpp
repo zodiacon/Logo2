@@ -37,7 +37,23 @@ namespace Logo2 {
 			case 0:	return -Integer();
 			case 1:	return -Real();
 		}
-		return Value();
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
+	Value Value::operator!() const {
+		switch (m_Value.index()) {
+			case 0:	return Integer() ? 0 : 1LL;
+			case 1:	return Real() ? 0.0 : 1.0;
+			case 2: return !Boolean();
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
+	Value Value::operator~() const {
+		switch (m_Value.index()) {
+			case 0:	return ~Integer();
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
 	bool Value::operator==(Value const& other) {

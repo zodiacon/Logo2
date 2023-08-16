@@ -91,6 +91,32 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> m_Block;
 	};
 
+	class WhileStatement : public Statement {
+	public:
+		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<BlockExpression> body);
+		Value Accept(Interpreter* visitor) const override;
+
+		Expression const* Condition() const;
+		BlockExpression const* Block() const;
+
+	private:
+		std::unique_ptr<Expression> m_Condition;
+		std::unique_ptr<BlockExpression> m_Block;
+	};
+
+	class IfElseExpression : public Expression {
+	public:
+		IfElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr = nullptr);
+
+		Expression const* Condition() const;
+		Expression const* Then() const;
+		Expression const* Else() const;
+
+	private:
+		std::unique_ptr<Expression> m_Condition;
+		std::unique_ptr<Expression> m_Then, m_Else;
+	};
+
 	class FunctionDeclaration : public LogoAstNode {
 	};
 

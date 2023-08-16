@@ -52,6 +52,8 @@ namespace Logo2 {
 		Keyword_False,
 		Keyword_For,
 		Keyword_Do,
+		Keyword_Break,
+		Keyword_Continue,
 	};
 
 	struct Token {

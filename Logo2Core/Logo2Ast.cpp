@@ -193,3 +193,35 @@ Value ExpressionStatement::Accept(Interpreter* visitor) const {
 Expression const* ExpressionStatement::Expr() const {
 	return m_Expr.get();
 }
+
+Logo2::WhileStatement::WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<BlockExpression> body) :
+	m_Condition(std::move(condition)), m_Block(std::move(body)) {
+}
+
+Value Logo2::WhileStatement::Accept(Interpreter* visitor) const {
+	return visitor->VisitWhile(this);
+}
+
+Expression const* Logo2::WhileStatement::Condition() const {
+	return m_Condition.get();
+}
+
+BlockExpression const* Logo2::WhileStatement::Block() const {
+	return m_Block.get();
+}
+
+Logo2::IfElseExpression::IfElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr) : 
+	m_Condition(std::move(condition)), m_Then(std::move(thenExpr)), m_Else(std::move(elseExpr)) {
+}
+
+Expression const* Logo2::IfElseExpression::Condition() const {
+	return m_Condition.get();
+}
+
+Expression const* Logo2::IfElseExpression::Then() const {
+	return m_Then.get();
+}
+
+Expression const* Logo2::IfElseExpression::Else() const {
+	return m_Else.get();
+}

@@ -7,4 +7,3 @@
 #include <memory>
 #include <variant>
 
-

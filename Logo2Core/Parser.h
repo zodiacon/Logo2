@@ -30,6 +30,7 @@ namespace Logo2 {
 		OpenBraceExpected,
 		CloseBraceExpected,
 		InvalidStatement,
+		ConditionExpressionExpected,
 	};
 
 	struct ParserError {
@@ -53,6 +54,7 @@ namespace Logo2 {
 		std::unique_ptr<VarStatement> ParseVarConstStatement(bool constant);
 		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration();
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
+		std::unique_ptr<WhileStatement> ParseWhileStatement();
 		std::unique_ptr<BlockExpression> ParseBlock();
 		std::unique_ptr<Statement> ParseStatement();
 

@@ -1,9 +1,12 @@
 #include "pch.h"
 #include "Interpreter.h"
 #include <Errors.h>
-#include "Runtime.h"
 
 using namespace Logo2;
+
+Value Logo2::Interpreter::Eval(LogoAstNode const* node) {
+    return node->Accept(this);
+}
 
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
     auto& lit = expr->Literal();
@@ -59,7 +62,7 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 Value Interpreter::VisitBlock(BlockExpression const* expr) {
     Value result;
     for (auto expr : expr->Expressions()) {
-        result = expr->Accept(this);
+        result = Eval(expr);
     }
     return result;
 }
@@ -81,7 +84,7 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
             //
             throw RuntimeError(ErrorType::CannotAssignConst, expr);
         }
-        it->second.VarValue = expr->Value()->Accept(this);
+        it->second.VarValue = Eval(expr->Value());
         return it->second.VarValue;
     }
     assert(false);
@@ -95,6 +98,9 @@ Value Interpreter::VisitPostfix(PostfixExpression const* expr) {
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     if (auto it = m_Functions.find(expr->Name()); it != m_Functions.end()) {
         auto& f = it->second;
+        if (f.ArgCount != expr->Arguments().size())
+            throw RuntimeError(ErrorType::ArgumentCountMismatch, expr);
+
         std::vector<Value> args;
         for (auto& arg : expr->Arguments()) {
             args.push_back(arg->Accept(this));
@@ -102,7 +108,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
         if (f.NativeCode)
             return f.NativeCode(*this, args);
         else if (f.Code)
-            return f.Code->Accept(this);
+            return Eval(f.Code.get());
         assert(false);
     }
 
@@ -110,15 +116,22 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 }
 
 Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
-    auto count = expr->Count()->Accept(this);
+    auto count = Eval(expr->Count());
     if (!count.IsInteger())
         throw RuntimeError(ErrorType::TypeMismatch, expr->Count());
 
     auto n = count.Integer();
     while (n-- > 0) {
-        expr->Block()->Accept(this);
+        Eval(expr->Block());
     }
     return nullptr;     // repeat has no return value
+}
+
+Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
+    while (Eval(stmt->Condition()).Boolean()) {
+        Eval(stmt->Block());
+    }
+    return Value();
 }
 
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {

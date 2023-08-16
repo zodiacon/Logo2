@@ -98,16 +98,18 @@ std::unique_ptr<Logo2::VarStatement> Logo2::Parser::ParseVarConstStatement(bool 
 
 std::unique_ptr<Logo2::RepeatStatement> Logo2::Parser::ParseRepeatStatement() {
 	Next();		// eat "repeat"
-	if (!Match(TokenType::OpenParen)) {
-		AddError(ParserError(ParseErrorType::OpenParenExpected, Peek()));
-	}
 	auto times = ParseExpression();
-	if (!Match(TokenType::CloseParen)) {
-		AddError(ParserError(ParseErrorType::CloseParenExpected, Peek()));
-	}
 
 	auto block = ParseBlock();
 	return std::make_unique<RepeatStatement>(std::move(times), std::move(block));
+}
+
+std::unique_ptr<Logo2::WhileStatement> Logo2::Parser::ParseWhileStatement() {
+	Next();	// eat "while"
+	auto cond = ParseExpression();
+	if (cond == nullptr)
+		AddError(ParserError(ParseErrorType::ConditionExpressionExpected, Peek()));
+	return std::make_unique<WhileStatement>(std::move(cond), ParseBlock());
 }
 
 std::unique_ptr<Logo2::BlockExpression> Logo2::Parser::ParseBlock() {
@@ -137,6 +139,8 @@ std::unique_ptr<Logo2::Statement> Logo2::Parser::ParseStatement() {
 		case TokenType::Keyword_Var: return ParseVarConstStatement(false);
 		case TokenType::Keyword_Const: return ParseVarConstStatement(true);
 		case TokenType::Keyword_Repeat: return ParseRepeatStatement();
+		case TokenType::Keyword_While: return ParseWhileStatement();
+		//case TokenType::Keyword_Break: return ParseBreakStatement();
 	}
 	auto expr = ParseExpression();
 	if (expr) {
@@ -173,6 +177,9 @@ void Logo2::Parser::Init() {
 		{ "const", TokenType::Keyword_Const },
 		{ "if", TokenType::Keyword_If },
 		{ "repeat", TokenType::Keyword_Repeat },
+		{ "while", TokenType::Keyword_While },
+		{ "break", TokenType::Keyword_Break },
+		{ "continue", TokenType::Keyword_Continue },
 		{ "else", TokenType::Keyword_Else },
 		{ "==", TokenType::Equal },
 		{ "!=", TokenType::NotEqual },

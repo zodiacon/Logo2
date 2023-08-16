@@ -27,6 +27,7 @@ namespace Logo2 {
 		friend Value operator^(Value const& left, Value const& right);
 		Value operator-() const;
 		Value operator!() const;
+		Value operator~() const;
 		friend std::partial_ordering operator<=>(Value const& left, Value const& right);
 		bool operator==(Value const& other);
 		bool operator!=(Value const& other);

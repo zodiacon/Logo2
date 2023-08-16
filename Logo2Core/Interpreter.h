@@ -10,6 +10,8 @@ namespace Logo2 {
 
 	class Interpreter {
 	public:
+		Value Eval(LogoAstNode const* node);
+
 		Value VisitLiteral(LiteralExpression const* expr);
 		Value VisitBinary(BinaryExpression const* expr);
 		Value VisitUnary(UnaryExpression const* expr);
@@ -20,6 +22,7 @@ namespace Logo2 {
 		Value VisitPostfix(PostfixExpression const* expr);
 		Value VisitInvokeFunction(InvokeFunctionExpression const* expr);
 		Value VisitRepeat(RepeatStatement const* expr);
+		Value VisitWhile(WhileStatement const* stmt);
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 

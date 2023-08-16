@@ -158,6 +158,9 @@
     <ProjectReference Include="..\Logo2Core\Logo2Core.vcxproj">
       <Project>{b9f88cda-77b1-4b54-91fe-fd37f8c9522f}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Logo2Runtime\Logo2Runtime.vcxproj">
+      <Project>{83f15d90-a190-4247-bcf0-a36e5fd24957}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

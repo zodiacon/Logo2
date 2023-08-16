@@ -29,9 +29,17 @@ namespace Logo2 {
 		};
 	};
 
+	class Turtle;
+
+	struct ICommandNotify {
+		virtual void AddCommand(Turtle* turtle, TurtleCommand const& cmd) = 0;
+	};
+
 	class Turtle {
 	public:
 		Turtle();
+
+		void SetNotify(ICommandNotify* pNotify);
 
 		void Forward(float amount);
 		void Back(float amount);
@@ -47,7 +55,6 @@ namespace Logo2 {
 
 		TurtleState Save() const;
 		void Restore(TurtleState const& state);
-		void SetCenter(float x, float y);
 
 		std::span<const TurtleCommand> GetCommands() const;
 
@@ -55,7 +62,7 @@ namespace Logo2 {
 		float ToRad(float angle) const;
 
 		std::vector<TurtleCommand> m_Commands;
-		float m_CenterX, m_CenterY;
+		ICommandNotify* m_pNotify{ nullptr };
 		TurtleState m_State;
 		bool m_Penup{ false };
 		float m_Step{ 1 };
