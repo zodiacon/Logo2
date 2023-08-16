@@ -50,6 +50,7 @@ namespace Logo2 {
 		void SetStep(float size);
 		float GetStep() const;
 		void SetPenColor(BYTE r, BYTE g, BYTE b, BYTE a = 255);
+		void SetPenWidth(float width);
 		void SetRadians(bool radians);
 		bool IsRadians() const;
 

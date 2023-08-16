@@ -8,6 +8,7 @@ namespace Logo2 {
 		CannotAssignConst,
 		TypeMismatch,
 		ArgumentCountMismatch,
+		UndefinedFunction,
 	};
 
 	struct RuntimeError {

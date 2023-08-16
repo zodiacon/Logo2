@@ -67,7 +67,12 @@ void Logo2::Window::DrawTurtleCommand(Gdiplus::Graphics& g, Turtle* t, TurtleCom
         }
 
         case TurtleCommandType::SetColor:
+        {
+            Color color;
+            color.SetValue(cmd.Color);
+            m_Pen.reset(new Pen(color, m_Pen->GetWidth()));
             break;
+        }
     }
 }
 

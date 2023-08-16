@@ -170,6 +170,7 @@ void Logo2::Parser::Init() {
 		{ "[", TokenType::OpenBracket },
 		{ "]", TokenType::CloseBracket },
 		{ ";", TokenType::SemiColon },
+		{ ",", TokenType::Comma },
 		{ "null", TokenType::Keyword_Null },
 		{ "true", TokenType::Keyword_True },
 		{ "false", TokenType::Keyword_False },

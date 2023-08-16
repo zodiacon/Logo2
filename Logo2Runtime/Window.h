@@ -5,7 +5,7 @@
 namespace Logo2 {
 	class Window : ICommandNotify {
 	public:
-		HWND Create(PCWSTR text, int width, int height, DWORD style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU);
+		HWND Create(PCWSTR text, int width, int height, DWORD style = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 		void AddTurtle(Turtle* t);
 
 		LRESULT DoPaint();

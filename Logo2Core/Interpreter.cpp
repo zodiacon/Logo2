@@ -112,7 +112,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
         assert(false);
     }
 
-    return Value();
+    throw RuntimeError(ErrorType::UndefinedFunction);
 }
 
 Value Interpreter::VisitRepeat(RepeatStatement const* expr) {

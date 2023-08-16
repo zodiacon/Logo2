@@ -37,9 +37,9 @@ int main() {
 		std::print(">> ");
 		std::string input;
 		int ch = 0;
+		MSG msg{};
 		while (ch != 13) {
-			MSG msg;
-			while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) && msg.message != WM_QUIT) {
 				::TranslateMessage(&msg);
 				::DispatchMessage(&msg);
 			}
@@ -62,6 +62,9 @@ int main() {
 				}
 			}
 		}
+
+		if (msg.message == WM_QUIT)
+			break;
 
 		try {
 			printf("\n");

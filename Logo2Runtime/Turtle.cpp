@@ -80,6 +80,18 @@ void Logo2::Turtle::SetPenColor(BYTE r, BYTE g, BYTE b, BYTE a) {
 	cmd.Type = TurtleCommandType::SetColor;
 	cmd.Color = (a << 24) | (r << 16) | (g << 8) | b;
 	m_Commands.push_back(cmd);
+	if (m_pNotify)
+		m_pNotify->AddCommand(this, cmd);
+
+}
+
+void Logo2::Turtle::SetPenWidth(float width) {
+	TurtleCommand cmd;
+	cmd.Type = TurtleCommandType::SetWidth;
+	cmd.Width = width;
+	m_Commands.push_back(cmd);
+	if (m_pNotify)
+		m_pNotify->AddCommand(this, cmd);
 }
 
 float Turtle::ToRad(float angle) const {
