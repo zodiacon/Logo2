@@ -5,8 +5,11 @@
 #include "Logo2Core.h"
 #include <functional>
 #include <stack>
+#include "Visitor.h"
 
 namespace Logo2 {
+	class Interpreter;
+
 	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
 
 	enum class VariableFlags {
@@ -31,24 +34,34 @@ namespace Logo2 {
 		Scope* m_Parent;
 	};
 
-	class Interpreter {
+	struct Return {
+		Expression const* ReturnValue;
+	};
+
+	struct BreakOrContinue {
+		bool Continue;
+	};
+
+	class Interpreter : public Visitor {
 	public:
 		Interpreter();
 		Value Eval(LogoAstNode const* node);
 
-		Value VisitLiteral(LiteralExpression const* expr);
-		Value VisitBinary(BinaryExpression const* expr);
-		Value VisitUnary(UnaryExpression const* expr);
-		Value VisitName(NameExpression const* expr);
-		Value VisitBlock(BlockExpression const* expr);
-		Value VisitVar(VarStatement const* expr);
-		Value VisitAssign(AssignExpression const* expr);
-		Value VisitPostfix(PostfixExpression const* expr);
-		Value VisitInvokeFunction(InvokeFunctionExpression const* expr);
-		Value VisitRepeat(RepeatStatement const* expr);
-		Value VisitWhile(WhileStatement const* stmt);
-		Value VisitIfThenElse(IfThenElseExpression const* expr);
-		Value VisitFunctionDeclaration(FunctionDeclaration const* decl);
+		Value VisitLiteral(LiteralExpression const* expr) override;
+		Value VisitBinary(BinaryExpression const* expr) override;
+		Value VisitUnary(UnaryExpression const* expr) override;
+		Value VisitName(NameExpression const* expr)override;
+		Value VisitBlock(BlockExpression const* expr) override;
+		Value VisitVar(VarStatement const* expr) override;
+		Value VisitAssign(AssignExpression const* expr) override;
+		Value VisitPostfix(PostfixExpression const* expr) override;
+		Value VisitInvokeFunction(InvokeFunctionExpression const* expr) override;
+		Value VisitRepeat(RepeatStatement const* expr) override;
+		Value VisitWhile(WhileStatement const* stmt)override;
+		Value VisitIfThenElse(IfThenElseExpression const* expr) override;
+		Value VisitFunctionDeclaration(FunctionDeclaration const* decl) override;
+		Value VisitReturn(ReturnStatement const* expr) override;
+		Value VisitBreakContinue(BreakOrContinueStatement const* stmt) override;
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 		bool AddVariable(std::string name, Variable var);

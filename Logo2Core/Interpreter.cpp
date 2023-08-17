@@ -132,7 +132,13 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
                 v.VarValue = std::move(args[i]);
                 AddVariable(f.Parameters[i], std::move(v));
             }
-            auto result = Eval(f.Code);
+            Value result;
+            try {
+                result = Eval(f.Code);
+            }
+            catch (Return const& ret) {
+                result = ret.ReturnValue->Accept(this);
+            }
             PopScope();
             return result;
         }
@@ -149,14 +155,26 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
 
     auto n = count.Integer();
     while (n-- > 0) {
-        Eval(expr->Block());
+        try {
+            Eval(expr->Block());
+        }
+        catch (BreakOrContinue const& bc) {
+            if (!bc.Continue)
+                break;
+        }
     }
     return nullptr;     // repeat has no return value
 }
 
 Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
     while (Eval(stmt->Condition()).ToBoolean()) {
-        Eval(stmt->Block());
+        try {
+            Eval(stmt->Block());
+        }
+        catch (BreakOrContinue const& bc) {
+            if (!bc.Continue)
+                break;
+        }
     }
     return Value();
 }
@@ -175,6 +193,14 @@ Value Logo2::Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* de
     m_Functions.insert({ decl->Name(), std::move(f) });
 
     return Value();
+}
+
+Value Logo2::Interpreter::VisitReturn(ReturnStatement const* stmt) {
+    throw Return(stmt->ReturnValue());
+}
+
+Value Logo2::Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
+    throw BreakOrContinue(stmt->IsContinue());
 }
 
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {

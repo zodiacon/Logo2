@@ -2,10 +2,9 @@
 
 #include "Token.h"
 #include "Value.h"
+#include "Visitor.h"
 
 namespace Logo2 {
-	class Interpreter;
-
 	enum class NodeType {
 		Unknown = -1,
 		Name,
@@ -17,7 +16,7 @@ namespace Logo2 {
 			return "";
 		}
 
-		virtual Value Accept(Interpreter* visitor) const = 0;
+		virtual Value Accept(Visitor* visitor) const = 0;
 		virtual NodeType Type() const {
 			return NodeType::Unknown;
 		}
@@ -32,7 +31,7 @@ namespace Logo2 {
 	class ExpressionStatement final : public Statement {
 	public:
 		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
-		virtual Value Accept(Interpreter* visitor) const;
+		virtual Value Accept(Visitor* visitor) const;
 		Expression const* Expr() const;
 
 	private:
@@ -42,7 +41,7 @@ namespace Logo2 {
 	class AssignExpression : public Expression {
 	public:
 		AssignExpression(std::string name, std::unique_ptr<Expression> expr);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::string const& Variable() const;
 		Expression* const Value() const;
 
@@ -54,7 +53,7 @@ namespace Logo2 {
 	class BlockExpression : public Expression {
 	public:
 		void Add(std::unique_ptr<LogoAstNode> node);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::vector<LogoAstNode*> const Expressions() const;
 		std::string ToString() const override;
 
@@ -65,7 +64,7 @@ namespace Logo2 {
 	class VarStatement : public Statement {
 	public:
 		VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 
 		std::string const& Name() const;
@@ -81,7 +80,7 @@ namespace Logo2 {
 	class RepeatStatement : public Statement {
 	public:
 		RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Count() const;
 		BlockExpression const* Block() const;
@@ -91,10 +90,20 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> m_Block;
 	};
 
+	class BreakOrContinueStatement : public Statement {
+	public:
+		explicit BreakOrContinueStatement(bool cont);
+		Value Accept(Visitor* visitor) const override;
+		bool IsContinue() const;
+
+	private:
+		bool m_IsContinue;
+	};
+
 	class WhileStatement : public Statement {
 	public:
 		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<BlockExpression> body);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Condition() const;
 		BlockExpression const* Block() const;
@@ -104,10 +113,20 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> m_Block;
 	};
 
+	class ReturnStatement : public Statement {
+	public:
+		explicit ReturnStatement(std::unique_ptr<Expression> expr = nullptr);
+		Value Accept(Visitor* visitor) const override;
+		Expression const* ReturnValue() const;
+
+	private:
+		std::unique_ptr<Expression> m_Expr;
+	};
+
 	class IfThenElseExpression : public Expression {
 	public:
 		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr = nullptr);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Condition() const;
 		Expression const* Then() const;
@@ -121,7 +140,7 @@ namespace Logo2 {
 	class FunctionDeclaration : public Statement {
 	public:
 		FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<BlockExpression> body);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const;
 		std::vector<std::string> const& Parameters() const;
@@ -135,7 +154,7 @@ namespace Logo2 {
 	class PostfixExpression : public Expression {
 	public:
 		PostfixExpression(std::unique_ptr<Expression> expr, Token token);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		Token const& Operator() const;
 		Expression const* Argument() const;
@@ -148,7 +167,7 @@ namespace Logo2 {
 	class BinaryExpression : public Expression {
 	public:
 		BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
 
@@ -164,7 +183,7 @@ namespace Logo2 {
 	class UnaryExpression : public Expression {
 	public:
 		UnaryExpression(Token op, std::unique_ptr<Expression> arg);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 		Token const& Operator() const;
 		Expression* Arg() const;
@@ -177,7 +196,7 @@ namespace Logo2 {
 	class LiteralExpression : public Expression {
 	public:
 		explicit LiteralExpression(Token token);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
 		Token const& Literal() const;
@@ -189,7 +208,7 @@ namespace Logo2 {
 	class NameExpression : public Expression {
 	public:
 		explicit NameExpression(std::string name);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const;
 		NodeType Type() const override;
 		std::string ToString() const override;
@@ -201,7 +220,7 @@ namespace Logo2 {
 	class InvokeFunctionExpression : public Expression {
 	public:
 		InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
-		Value Accept(Interpreter* visitor) const override;
+		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const;
 		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 

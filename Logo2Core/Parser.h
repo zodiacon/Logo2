@@ -32,6 +32,7 @@ namespace Logo2 {
 		CloseBraceExpected,
 		InvalidStatement,
 		ConditionExpressionExpected,
+		BreakContinueNoLoop,
 	};
 
 	struct ParserError {
@@ -59,10 +60,13 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> ParseBlock(std::vector<std::string> const& args = {});
 		std::unique_ptr<Statement> ParseStatement();
 		std::unique_ptr<IfThenElseExpression> ParseIfThenElseExpression();
+		std::unique_ptr<ReturnStatement> ParseReturnStatement();
+		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement(bool cont);
 
 		Token Next();
 		Token Peek() const;
 		bool Match(TokenType type, bool consume = true);
+		bool Match(std::string_view lexeme, bool consume = true);
 
 		bool AddSymbol(Symbol sym);
 		Symbol const* FindSymbol(std::string const& name) const;
@@ -79,6 +83,7 @@ namespace Logo2 {
 		std::vector<Token> m_Tokens;
 		size_t m_Current;
 		std::stack<std::unique_ptr<SymbolTable>> m_Symbols;
+		int m_LoopCount{ 0 };
 	};
 
 }
