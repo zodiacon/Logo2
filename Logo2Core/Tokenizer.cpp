@@ -51,8 +51,8 @@ Logo2::Token Logo2::Tokenizer::Peek() {
 bool Logo2::Tokenizer::ProcessSingleLineComment() {
 	auto current = m_Current;
 	int i = 0;
-	while (*current && *current++ == m_CommentToEndOfLine[i++]) {
-		if (i == m_CommentToEndOfLine.length())
+	while (*current && *current++ == m_CommentToEndOfLine[i]) {
+		if (++i == m_CommentToEndOfLine.length())
 			break;
 	}
 	if (i == m_CommentToEndOfLine.length()) {
