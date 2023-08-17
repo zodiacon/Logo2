@@ -56,7 +56,7 @@ namespace Logo2 {
 		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration();
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
 		std::unique_ptr<WhileStatement> ParseWhileStatement();
-		std::unique_ptr<BlockExpression> ParseBlock();
+		std::unique_ptr<BlockExpression> ParseBlock(std::vector<std::string> const& args = {});
 		std::unique_ptr<Statement> ParseStatement();
 		std::unique_ptr<IfThenElseExpression> ParseIfThenElseExpression();
 

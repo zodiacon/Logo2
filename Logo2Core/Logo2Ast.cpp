@@ -229,3 +229,23 @@ Expression const* Logo2::IfThenElseExpression::Then() const {
 Expression const* Logo2::IfThenElseExpression::Else() const {
 	return m_Else.get();
 }
+
+Logo2::FunctionDeclaration::FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<BlockExpression> body) : 
+	m_Name(std::move(name)), m_Parameters(std::move(parameters)), m_Body(std::move(body)) {
+}
+
+Value Logo2::FunctionDeclaration::Accept(Interpreter* visitor) const {
+	return visitor->VisitFunctionDeclaration(this);
+}
+
+std::string const& Logo2::FunctionDeclaration::Name() const {
+	return m_Name;
+}
+
+std::vector<std::string> const& Logo2::FunctionDeclaration::Parameters() const {
+	return m_Parameters;
+}
+
+BlockExpression const* Logo2::FunctionDeclaration::Body() const {
+	return m_Body.get();
+}

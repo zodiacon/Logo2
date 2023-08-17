@@ -22,7 +22,7 @@ const char* TokenTypeToString(Logo2::TokenType type) {
 	return "";
 }
 
-int main() {
+int main(int argc, const char* argv[]) {
 	using namespace std;
 	using namespace Logo2;
 
@@ -32,6 +32,30 @@ int main() {
 	Runtime runtime(inter);
 	runtime.Init();
 	runtime.CreateLogoWindow(L"Logo 2", 800, 800);
+
+	if (argc > 1) {
+		try {
+			auto ast = parser.ParseFile(argv[1]);
+			if (parser.HasErrors()) {
+				for (auto& err : parser.Errors()) {
+					printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
+				}
+				return 1;
+			}
+			try {
+				auto result = ast->Accept(&inter);
+				if (result != nullptr)
+					std::println("{}", result.ToString());
+			}
+			catch (RuntimeError const& err) {
+				printf("Runtime error: %d\n", (int)err.Error);
+			}
+		}
+		catch (ParserError const& err) {
+			printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
+			return 1;
+		}
+	}
 
 	for (;;) {
 		std::print(">> ");

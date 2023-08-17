@@ -96,6 +96,47 @@ std::unique_ptr<Logo2::VarStatement> Logo2::Parser::ParseVarConstStatement(bool 
 	return std::make_unique<VarStatement>(name.Lexeme, constant, std::move(init));
 }
 
+std::unique_ptr<Logo2::FunctionDeclaration> Logo2::Parser::ParseFunctionDeclaration() {
+	Next();		// eat fn keyword
+	auto ident = Next();
+	if (ident.Type != TokenType::Identifier)
+		throw ParserError(ParseErrorType::IdentifierExpected, ident);
+
+	auto sym = FindSymbol(ident.Lexeme);
+	if (sym)
+		AddError(ParserError(ParseErrorType::DuplicateDefinition, ident));
+
+	if(!Match(TokenType::OpenParen))
+		throw ParserError(ParseErrorType::OpenParenExpected, ident);
+
+	//
+	// get list of arguments
+	//
+	std::vector<std::string> parameters;
+	while (Peek().Type != TokenType::CloseParen) {
+		auto param = Next();
+		if (param.Type != TokenType::Identifier)
+			throw ParserError(ParseErrorType::IdentifierExpected, ident);
+		parameters.push_back(param.Lexeme);
+		if (Match(TokenType::Comma))
+			continue;
+		if(!Match(TokenType::CloseParen, false))
+			throw ParserError(ParseErrorType::CloseParenExpected, ident);
+	}
+
+	Next();		// eat close paren
+	auto body = ParseBlock(parameters);
+	auto decl = std::make_unique<FunctionDeclaration>(std::move(ident.Lexeme), std::move(parameters), std::move(body));
+	if (decl && sym == nullptr) {
+		Symbol sym;
+		sym.Name = decl->Name();
+		sym.Type = SymbolType::Function;
+		sym.Flags = SymbolFlags::None;
+		AddSymbol(sym);
+	}
+	return decl;
+}
+
 std::unique_ptr<Logo2::RepeatStatement> Logo2::Parser::ParseRepeatStatement() {
 	Next();		// eat "repeat"
 	auto times = ParseExpression();
@@ -112,11 +153,20 @@ std::unique_ptr<Logo2::WhileStatement> Logo2::Parser::ParseWhileStatement() {
 	return std::make_unique<WhileStatement>(std::move(cond), ParseBlock());
 }
 
-std::unique_ptr<Logo2::BlockExpression> Logo2::Parser::ParseBlock() {
+std::unique_ptr<Logo2::BlockExpression> Logo2::Parser::ParseBlock(std::vector<std::string> const& args) {
 	if (!Match(TokenType::OpenBrace))
 		AddError(ParserError(ParseErrorType::OpenBraceExpected, Peek()));
 
 	m_Symbols.push(std::make_unique<SymbolTable>(m_Symbols.top().get()));
+
+	for (auto& arg : args) {
+		Symbol sym;
+		sym.Name = arg;
+		sym.Flags = SymbolFlags::None;
+		sym.Type = SymbolType::Argument;
+		AddSymbol(sym);
+	}
+
 	auto block = std::make_unique<BlockExpression>();
 	while (Peek().Type != TokenType::CloseBrace) {
 		auto stmt = ParseStatement();
@@ -140,6 +190,7 @@ std::unique_ptr<Logo2::Statement> Logo2::Parser::ParseStatement() {
 		case TokenType::Keyword_Const: return ParseVarConstStatement(true);
 		case TokenType::Keyword_Repeat: return ParseRepeatStatement();
 		case TokenType::Keyword_While: return ParseWhileStatement();
+		case TokenType::Keyword_Fn: return ParseFunctionDeclaration();
 		//case TokenType::Keyword_Break: return ParseBreakStatement();
 	}
 	auto expr = ParseExpression();

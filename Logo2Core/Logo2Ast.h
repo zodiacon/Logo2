@@ -118,7 +118,18 @@ namespace Logo2 {
 		std::unique_ptr<Expression> m_Then, m_Else;
 	};
 
-	class FunctionDeclaration : public LogoAstNode {
+	class FunctionDeclaration : public Statement {
+	public:
+		FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<BlockExpression> body);
+		Value Accept(Interpreter* visitor) const override;
+
+		std::string const& Name() const;
+		std::vector<std::string> const& Parameters() const;
+		BlockExpression const* Body() const;
+	private:
+		std::string m_Name;
+		std::vector<std::string> m_Parameters;
+		std::unique_ptr<BlockExpression> m_Body;
 	};
 
 	class PostfixExpression : public Expression {

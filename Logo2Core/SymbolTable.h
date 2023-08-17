@@ -6,7 +6,7 @@ namespace Logo2 {
 	enum class SymbolType {
 		Variable,
 		Function,
-		Namespace,
+		Argument,
 	};
 
 	enum class SymbolFlags {

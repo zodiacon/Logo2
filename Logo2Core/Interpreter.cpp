@@ -4,6 +4,13 @@
 
 using namespace Logo2;
 
+Logo2::Interpreter::Interpreter() {
+    //
+    // push global scope
+    //
+    m_Scopes.push(std::make_unique<Scope>());
+}
+
 Value Logo2::Interpreter::Eval(LogoAstNode const* node) {
     return node->Accept(this);
 }
@@ -56,16 +63,19 @@ Value Interpreter::VisitUnary(UnaryExpression const* expr) {
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
-    if (auto it = m_Variables.find(expr->Name()); it != m_Variables.end())
-        return it->second.VarValue;
+    auto v = FindVariable(expr->Name());
+    if (v)
+        return v->VarValue;
     return Value();
 }
 
 Value Interpreter::VisitBlock(BlockExpression const* expr) {
     Value result;
+    //PushScope();
     for (auto expr : expr->Expressions()) {
         result = Eval(expr);
     }
+    //PopScope();
     return result;
 }
 
@@ -74,20 +84,21 @@ Value Interpreter::VisitVar(VarStatement const* expr) {
     Variable var;
     var.Flags = expr->IsConst() ? VariableFlags::Const : VariableFlags::None;
     var.VarValue = std::move(value);
-    m_Variables.insert({ expr->Name(), std::move(var) });
+    AddVariable(expr->Name(), std::move(var));
     return Value();
 }
 
 Value Interpreter::VisitAssign(AssignExpression const* expr) {
-    if (auto it = m_Variables.find(expr->Variable()); it != m_Variables.end()) {
-        if ((it->second.Flags & VariableFlags::Const) == VariableFlags::Const) {
+    auto v = FindVariable(expr->Variable());
+    if(v) {
+        if ((v->Flags & VariableFlags::Const) == VariableFlags::Const) {
             //
             // cannot assign to const variable
             //
             throw RuntimeError(ErrorType::CannotAssignConst, expr);
         }
-        it->second.VarValue = Eval(expr->Value());
-        return it->second.VarValue;
+        v->VarValue = Eval(expr->Value());
+        return v->VarValue;
     }
     assert(false);
     return Value();
@@ -109,8 +120,22 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
         }
         if (f.NativeCode)
             return f.NativeCode(*this, args);
-        else if (f.Code)
-            return Eval(f.Code.get());
+        else if (f.Code) {
+            //
+            // bind arguments
+            //
+            assert(f.ArgCount == args.size());
+            PushScope();
+            for (int i = 0; i < f.ArgCount; i++) {
+                Variable v;
+                v.Flags = VariableFlags::None;
+                v.VarValue = std::move(args[i]);
+                AddVariable(f.Parameters[i], std::move(v));
+            }
+            auto result = Eval(f.Code);
+            PopScope();
+            return result;
+        }
         assert(false);
     }
 
@@ -142,6 +167,16 @@ Value Logo2::Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
     return expr->Else() ? Eval(expr->Else()) : nullptr;
 }
 
+Value Logo2::Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
+    Function f;
+    f.ArgCount = (int)decl->Parameters().size();
+    f.Code = decl->Body();
+    f.Parameters = decl->Parameters();
+    m_Functions.insert({ decl->Name(), std::move(f) });
+
+    return Value();
+}
+
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {
     Function f;
     f.ArgCount = arity;
@@ -149,4 +184,43 @@ bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction 
     return m_Functions.insert({ std::move(name), std::move(f) }).second;
 }
 
+bool Logo2::Interpreter::AddVariable(std::string name, Variable var) {
+    return m_Scopes.top()->AddVariable(std::move(name), std::move(var));
+}
 
+Variable const* Logo2::Interpreter::FindVariable(std::string const& name) const {
+    return m_Scopes.top()->FindVariable(name);
+}
+
+Variable* Logo2::Interpreter::FindVariable(std::string const& name) {
+    return m_Scopes.top()->FindVariable(name);
+}
+
+void Logo2::Interpreter::PushScope() {
+    m_Scopes.push(std::make_unique<Scope>(m_Scopes.top().get()));
+}
+
+void Logo2::Interpreter::PopScope() {
+    m_Scopes.pop();
+}
+
+Logo2::Scope::Scope(Scope* parent) : m_Parent(parent) {
+}
+
+bool Logo2::Scope::AddVariable(std::string name, Variable var) {
+    return m_Variables.insert({ std::move(name), std::move(var) }).second;
+}
+
+Variable const* Logo2::Scope::FindVariable(std::string const& name) const {
+    if (auto it = m_Variables.find(name); it != m_Variables.end())
+        return &it->second;
+
+    return m_Parent ? m_Parent->FindVariable(name) : nullptr;
+}
+
+Variable* Logo2::Scope::FindVariable(std::string const& name) {
+    if (auto it = m_Variables.find(name); it != m_Variables.end())
+        return &it->second;
+
+    return m_Parent ? m_Parent->FindVariable(name) : nullptr;
+}
