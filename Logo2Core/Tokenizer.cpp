@@ -14,11 +14,11 @@ bool Logo2::Tokenizer::AddToken(std::string lexeme, TokenType type) {
 	return m_TokenTypes.insert({ std::move(lexeme), type }).second;
 }
 
-bool Logo2::Tokenizer::AddTokens(std::span<std::pair<std::string, TokenType>> tokens) {
+int Logo2::Tokenizer::AddTokens(std::span<std::pair<std::string, TokenType>> tokens) {
+	auto count = 0;
 	for (auto const& [str, type] : tokens)
-		if (!AddToken(str, type))
-			return false;
-	return true;
+		count += AddToken(str, type);
+	return count;
 }
 
 Logo2::Token Logo2::Tokenizer::Next() {

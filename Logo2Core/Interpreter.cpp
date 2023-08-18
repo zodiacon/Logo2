@@ -43,6 +43,9 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
         case TokenType::Mul: return expr->Left()->Accept(this) * expr->Right()->Accept(this);
         case TokenType::Div: return expr->Left()->Accept(this) / expr->Right()->Accept(this);
         case TokenType::Mod: return expr->Left()->Accept(this) % expr->Right()->Accept(this);
+        case TokenType::And: return expr->Left()->Accept(this) & expr->Right()->Accept(this);
+        case TokenType::Or: return expr->Left()->Accept(this) | expr->Right()->Accept(this);
+        case TokenType::Xor: return expr->Left()->Accept(this) ^ expr->Right()->Accept(this);
         case TokenType::Equal: return expr->Left()->Accept(this) == expr->Right()->Accept(this);
         case TokenType::NotEqual: return expr->Left()->Accept(this) != expr->Right()->Accept(this);
         case TokenType::LessThan: return expr->Left()->Accept(this) < expr->Right()->Accept(this);

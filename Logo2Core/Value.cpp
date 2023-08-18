@@ -138,6 +138,30 @@ namespace Logo2 {
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
+	Value operator&(Value const& left, Value const& right) {
+		switch (left.Index() | (right.Index() << 4)) {
+			case 0: return left.Integer() & right.Integer();
+			case 2 | (2 << 4): return bool(left.Boolean() & right.Boolean());
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
+	Value operator|(Value const& left, Value const& right) {
+		switch (left.Index() | (right.Index() << 4)) {
+			case 0: return left.Integer() | right.Integer();
+				case 2 | (2 << 4) : return bool(left.Boolean() | right.Boolean());
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
+	Value operator^(Value const& left, Value const& right) {
+		switch (left.Index() | (right.Index() << 4)) {
+			case 0: return left.Integer() ^ right.Integer();
+				case 2 | (2 << 4) : return bool(left.Boolean() ^ right.Boolean());
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
 	Value operator/(Value const& left, Value const& right) {
 		switch (right.Index()) {
 			case 0: 				

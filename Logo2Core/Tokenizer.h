@@ -9,7 +9,7 @@ namespace Logo2 {
 		void SetCommentToEndOfLine(std::string chars);
 
 		bool AddToken(std::string lexeme, TokenType type);
-		bool AddTokens(std::span<std::pair<std::string, TokenType>> tokens);
+		int AddTokens(std::span<std::pair<std::string, TokenType>> tokens);
 
 		Token Next();
 		Token Peek();
