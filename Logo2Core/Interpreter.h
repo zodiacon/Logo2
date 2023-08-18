@@ -62,6 +62,7 @@ namespace Logo2 {
 		Value VisitFunctionDeclaration(FunctionDeclaration const* decl) override;
 		Value VisitReturn(ReturnStatement const* expr) override;
 		Value VisitBreakContinue(BreakOrContinueStatement const* stmt) override;
+		Value VisitFor(ForStatement const* stmt) override;
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 		bool AddVariable(std::string name, Variable var);

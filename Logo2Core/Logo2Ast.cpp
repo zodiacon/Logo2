@@ -4,6 +4,10 @@
 
 using namespace Logo2;
 
+NodeType Logo2::Expression::Type() const {
+	return NodeType::Expression;
+}
+
 BinaryExpression::BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right) 
 	: m_Left(std::move(left)), m_Right(std::move(right)), m_Operator(std::move(op)) {
 }
@@ -123,6 +127,10 @@ std::string VarStatement::ToString() const {
 	return std::format("{} = {};", m_Name, m_Init ? m_Init->ToString() : "");
 }
 
+NodeType Logo2::VarStatement::Type() const {
+	return NodeType::Var;
+}
+
 std::string const& VarStatement::Name() const {
 	return m_Name;
 }
@@ -186,6 +194,10 @@ BlockExpression const* RepeatStatement::Block() const {
 ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(std::move(expr)) {
 }
 
+NodeType Logo2::ExpressionStatement::Type() const {
+	return NodeType::Expression;
+}
+
 Value ExpressionStatement::Accept(Visitor* visitor) const {
 	return m_Expr->Accept(visitor);
 }
@@ -195,7 +207,7 @@ Expression const* ExpressionStatement::Expr() const {
 }
 
 Logo2::WhileStatement::WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<BlockExpression> body) :
-	m_Condition(std::move(condition)), m_Block(std::move(body)) {
+	m_Condition(std::move(condition)), m_Body(std::move(body)) {
 }
 
 Value Logo2::WhileStatement::Accept(Visitor* visitor) const {
@@ -206,8 +218,8 @@ Expression const* Logo2::WhileStatement::Condition() const {
 	return m_Condition.get();
 }
 
-BlockExpression const* Logo2::WhileStatement::Block() const {
-	return m_Block.get();
+BlockExpression const* Logo2::WhileStatement::Body() const {
+	return m_Body.get();
 }
 
 Logo2::IfThenElseExpression::IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr) : 
@@ -271,3 +283,28 @@ Value Logo2::BreakOrContinueStatement::Accept(Visitor* visitor) const {
 bool Logo2::BreakOrContinueStatement::IsContinue() const {
 	return m_IsContinue;
 }
+
+Logo2::ForStatement::ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, std::unique_ptr<Expression> incExpr, std::unique_ptr<BlockExpression> body) :
+	m_Init(std::move(init)), m_While(std::move(whileExpr)), m_Inc(std::move(incExpr)), m_Body(std::move(body)) {
+}
+
+Value Logo2::ForStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitFor(this);
+}
+
+Statement const* Logo2::ForStatement::Init() const {
+	return m_Init.get();
+}
+
+Expression const* Logo2::ForStatement::While() const {
+	return m_While.get();
+}
+
+Expression const* Logo2::ForStatement::Inc() const {
+	return m_Inc.get();
+}
+
+BlockExpression const* Logo2::ForStatement::Body() const {
+	return m_Body.get();
+}
+

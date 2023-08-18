@@ -33,6 +33,7 @@ namespace Logo2 {
 		InvalidStatement,
 		ConditionExpressionExpected,
 		BreakContinueNoLoop,
+		ExpressionOrVarExpected,
 	};
 
 	struct ParserError {
@@ -59,9 +60,9 @@ namespace Logo2 {
 		std::unique_ptr<WhileStatement> ParseWhileStatement();
 		std::unique_ptr<BlockExpression> ParseBlock(std::vector<std::string> const& args = {});
 		std::unique_ptr<Statement> ParseStatement();
-		std::unique_ptr<IfThenElseExpression> ParseIfThenElseExpression();
 		std::unique_ptr<ReturnStatement> ParseReturnStatement();
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement(bool cont);
+		std::unique_ptr<ForStatement> ParseForStatement();
 
 		Token Next();
 		Token Peek() const;

@@ -169,7 +169,7 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
 Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
     while (Eval(stmt->Condition()).ToBoolean()) {
         try {
-            Eval(stmt->Block());
+            Eval(stmt->Body());
         }
         catch (BreakOrContinue const& bc) {
             if (!bc.Continue)
@@ -201,6 +201,19 @@ Value Logo2::Interpreter::VisitReturn(ReturnStatement const* stmt) {
 
 Value Logo2::Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
     throw BreakOrContinue(stmt->IsContinue());
+}
+
+Value Logo2::Interpreter::VisitFor(ForStatement const* stmt) {
+    for (Eval(stmt->Init()); Eval(stmt->While()).ToBoolean(); Eval(stmt->Inc())) {
+        try {
+            Eval(stmt->Body());
+        }
+        catch (BreakOrContinue const& bc) {
+            if (!bc.Continue)
+                break;
+        }
+    }
+    return nullptr;
 }
 
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {

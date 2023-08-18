@@ -18,6 +18,7 @@ namespace Logo2 {
 	class AssignExpression;
 	class ReturnStatement;
 	class BreakOrContinueStatement;
+	class ForStatement;
 
 	class Visitor abstract {
 	public:
@@ -36,6 +37,7 @@ namespace Logo2 {
 		virtual Value VisitFunctionDeclaration(FunctionDeclaration const* decl) = 0;
 		virtual Value VisitReturn(ReturnStatement const* decl) = 0;
 		virtual Value VisitBreakContinue(BreakOrContinueStatement const* stmt) = 0;
+		virtual Value VisitFor(ForStatement const* stmt) = 0;
 	};
 }
 

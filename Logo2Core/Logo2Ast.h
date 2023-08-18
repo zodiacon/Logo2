@@ -8,6 +8,9 @@ namespace Logo2 {
 	enum class NodeType {
 		Unknown = -1,
 		Name,
+		Var, 
+		Expression,
+		Statement,
 	};
 
 	class LogoAstNode abstract {
@@ -26,11 +29,14 @@ namespace Logo2 {
 	};
 
 	class Expression abstract : public LogoAstNode {
+	public:
+		NodeType Type() const override;
 	};
 
 	class ExpressionStatement final : public Statement {
 	public:
 		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
+		NodeType Type() const override;
 		virtual Value Accept(Visitor* visitor) const;
 		Expression const* Expr() const;
 
@@ -66,6 +72,7 @@ namespace Logo2 {
 		VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
+		NodeType Type() const override;
 
 		std::string const& Name() const;
 		Expression const* Init() const;
@@ -106,11 +113,11 @@ namespace Logo2 {
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Condition() const;
-		BlockExpression const* Block() const;
+		BlockExpression const* Body() const;
 
 	private:
 		std::unique_ptr<Expression> m_Condition;
-		std::unique_ptr<BlockExpression> m_Block;
+		std::unique_ptr<BlockExpression> m_Body;
 	};
 
 	class ReturnStatement : public Statement {
@@ -228,4 +235,21 @@ namespace Logo2 {
 		std::string m_Name;
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
 	};
+
+	class ForStatement : public Statement {
+	public:
+		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, std::unique_ptr<Expression> incExpr, std::unique_ptr<BlockExpression> body);
+		Value Accept(Visitor* visitor) const override;
+
+		Statement const* Init() const;
+		Expression const* While() const;
+		Expression const* Inc() const;
+		BlockExpression const* Body() const;
+
+	private:
+		std::unique_ptr<Expression> m_While, m_Inc;
+		std::unique_ptr<Statement> m_Init;
+		std::unique_ptr<BlockExpression> m_Body;
+	};
+
 }

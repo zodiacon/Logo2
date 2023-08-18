@@ -82,8 +82,6 @@ std::unique_ptr<Logo2::VarStatement> Logo2::Parser::ParseVarConstStatement(bool 
 	}
 	else if (constant)
 		throw ParserError(ParseErrorType::MissingInitExpression, Peek());
-	else
-		throw ParserError(ParseErrorType::AssignExpected, Peek());
 
 	if (!Match(TokenType::SemiColon))
 		throw ParserError(ParseErrorType::SemicolonExpected, Peek());
@@ -199,6 +197,7 @@ std::unique_ptr<Logo2::Statement> Logo2::Parser::ParseStatement() {
 		case TokenType::Keyword_Return: return ParseReturnStatement();
 		case TokenType::Keyword_Break: return ParseBreakContinueStatement(false);
 		case TokenType::Keyword_Continue: return ParseBreakContinueStatement(true);
+		case TokenType::Keyword_For: return ParseForStatement();
 	}
 	auto expr = ParseExpression();
 	if (expr) {
@@ -228,6 +227,23 @@ std::unique_ptr<Logo2::BreakOrContinueStatement> Logo2::Parser::ParseBreakContin
 		AddError(ParserError(ParseErrorType::BreakContinueNoLoop, Peek()));
 
 	return std::make_unique<BreakOrContinueStatement>(cont);
+}
+
+std::unique_ptr<Logo2::ForStatement> Logo2::Parser::ParseForStatement() {
+	Next();		// eat for
+	auto init = ParseStatement();
+	if(init->Type() != NodeType::Var && init->Type() != NodeType::Expression)
+		AddError(ParserError(ParseErrorType::ExpressionOrVarExpected, Peek()));
+
+	auto whileExpr = ParseExpression();
+	if (!Match(TokenType::SemiColon))
+		AddError(ParserError(ParseErrorType::SemicolonExpected, Peek()));
+
+	auto inc = ParseExpression();
+	m_LoopCount++;
+	auto body = ParseBlock();
+	m_LoopCount--;
+	return std::make_unique<ForStatement>(std::move(init), std::move(whileExpr), std::move(inc), std::move(body));
 }
 
 void Logo2::Parser::Init() {
@@ -278,6 +294,7 @@ void Logo2::Parser::Init() {
 		{ "break", TokenType::Keyword_Break },
 		{ "continue", TokenType::Keyword_Continue },
 		{ "else", TokenType::Keyword_Else },
+		{ "for", TokenType::Keyword_For },
 		{ "fn", TokenType::Keyword_Fn },
 		{ "return", TokenType::Keyword_Return },
 	};
