@@ -36,9 +36,10 @@ namespace Logo2 {
 		ExpressionOrVarExpected,
 	};
 
-	struct ParserError {
+	struct ParseError {
 		ParseErrorType Error;
 		Token ErrorToken;
+		std::string ErrorText;	// optional
 	};
 
 	class Parser {
@@ -49,9 +50,9 @@ namespace Logo2 {
 
 		bool AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet);
 		bool AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet);
-		void AddError(ParserError err);
+		void AddError(ParseError err);
 		bool HasErrors() const;
-		std::span<const ParserError> Errors() const;
+		std::span<const ParseError> Errors() const;
 
 		std::unique_ptr<Expression> ParseExpression(int precedence = 0);
 		std::unique_ptr<VarStatement> ParseVarConstStatement(bool constant);
@@ -70,17 +71,17 @@ namespace Logo2 {
 		bool Match(std::string_view lexeme, bool consume = true);
 
 		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name) const;
+		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
 
 	private:
 		void Init();
-		std::unique_ptr<LogoAstNode> DoParse();
+		std::unique_ptr<Statements> DoParse();
 		int GetPrecedence() const;
 
 		Tokenizer& m_Tokenizer;
 		std::unordered_map<TokenType, std::unique_ptr<InfixParslet>> m_InfixParslets;
 		std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
-		std::vector<ParserError> m_Errors;
+		std::vector<ParseError> m_Errors;
 		std::vector<Token> m_Tokens;
 		size_t m_Current;
 		std::stack<std::unique_ptr<SymbolTable>> m_Symbols;

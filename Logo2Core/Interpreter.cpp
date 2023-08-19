@@ -4,14 +4,14 @@
 
 using namespace Logo2;
 
-Logo2::Interpreter::Interpreter() {
+Interpreter::Interpreter() {
     //
     // push global scope
     //
     m_Scopes.push(std::make_unique<Scope>());
 }
 
-Value Logo2::Interpreter::Eval(LogoAstNode const* node) {
+Value Interpreter::Eval(LogoAstNode const* node) {
     return node->Accept(this);
 }
 
@@ -61,24 +61,25 @@ Value Interpreter::VisitUnary(UnaryExpression const* expr) {
     switch (expr->Operator().Type) {
         case TokenType::Sub: return -value;
         case TokenType::Add: return value;
+        case TokenType::Not: return !value;
     }
-    return Value();
+    throw RuntimeError(ErrorType::UndefinedOperator, expr->Arg());
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
     auto v = FindVariable(expr->Name());
     if (v)
         return v->VarValue;
-    return Value();
+    throw RuntimeError(ErrorType::UndefinedSymbol, expr);
 }
 
 Value Interpreter::VisitBlock(BlockExpression const* expr) {
     Value result;
-    //PushScope();
+//    PushScope();
     for (auto expr : expr->Expressions()) {
         result = Eval(expr);
     }
-    //PopScope();
+//    PopScope();
     return result;
 }
 
@@ -128,6 +129,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
             // bind arguments
             //
             assert(f.ArgCount == args.size());
+            auto scopes = m_Scopes.size();
             PushScope();
             for (int i = 0; i < f.ArgCount; i++) {
                 Variable v;
@@ -142,7 +144,8 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
             catch (Return const& ret) {
                 result = ret.ReturnValue->Accept(this);
             }
-            PopScope();
+            while(m_Scopes.size() > scopes)
+                PopScope();
             return result;
         }
         assert(false);
@@ -157,6 +160,7 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
         throw RuntimeError(ErrorType::TypeMismatch, expr->Count());
 
     auto n = count.Integer();
+    PushScope();
     while (n-- > 0) {
         try {
             Eval(expr->Block());
@@ -166,29 +170,43 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
                 break;
         }
     }
+    PopScope();
     return nullptr;     // repeat has no return value
 }
 
-Value Logo2::Interpreter::VisitWhile(WhileStatement const* stmt) {
+Value Interpreter::VisitWhile(WhileStatement const* stmt) {
     while (Eval(stmt->Condition()).ToBoolean()) {
+        PushScope();
         try {
             Eval(stmt->Body());
         }
         catch (BreakOrContinue const& bc) {
-            if (!bc.Continue)
+            if (!bc.Continue) {
+                PopScope();
                 break;
+            }
         }
+        PopScope();
     }
     return Value();
 }
 
-Value Logo2::Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
-    if (Eval(expr->Condition()).ToBoolean())
-        return Eval(expr->Then());
-    return expr->Else() ? Eval(expr->Else()) : nullptr;
+Value Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
+    Value result;
+    if (Eval(expr->Condition()).ToBoolean()) {
+        PushScope();
+        result = Eval(expr->Then());
+        PopScope();
+    }
+    else if (expr->Else()) {
+        PushScope();
+        result = Eval(expr->Else());
+        PopScope();
+    }
+    return result;
 }
 
-Value Logo2::Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
+Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
     Function f;
     f.ArgCount = (int)decl->Parameters().size();
     f.Code = decl->Body();
@@ -198,15 +216,15 @@ Value Logo2::Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* de
     return Value();
 }
 
-Value Logo2::Interpreter::VisitReturn(ReturnStatement const* stmt) {
+Value Interpreter::VisitReturn(ReturnStatement const* stmt) {
     throw Return(stmt->ReturnValue());
 }
 
-Value Logo2::Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
+Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
     throw BreakOrContinue(stmt->IsContinue());
 }
 
-Value Logo2::Interpreter::VisitFor(ForStatement const* stmt) {
+Value Interpreter::VisitFor(ForStatement const* stmt) {
     for (Eval(stmt->Init()); Eval(stmt->While()).ToBoolean(); Eval(stmt->Inc())) {
         try {
             Eval(stmt->Body());
@@ -219,6 +237,13 @@ Value Logo2::Interpreter::VisitFor(ForStatement const* stmt) {
     return nullptr;
 }
 
+Value Logo2::Interpreter::VisitStatements(Statements const* stmts) {
+    Value result;
+    for (auto& stmt : stmts->Get())
+        result = Eval(stmt.get());
+    return result;
+}
+
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {
     Function f;
     f.ArgCount = arity;
@@ -226,41 +251,41 @@ bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction 
     return m_Functions.insert({ std::move(name), std::move(f) }).second;
 }
 
-bool Logo2::Interpreter::AddVariable(std::string name, Variable var) {
+bool Interpreter::AddVariable(std::string name, Variable var) {
     return m_Scopes.top()->AddVariable(std::move(name), std::move(var));
 }
 
-Variable const* Logo2::Interpreter::FindVariable(std::string const& name) const {
+Variable const* Interpreter::FindVariable(std::string const& name) const {
     return m_Scopes.top()->FindVariable(name);
 }
 
-Variable* Logo2::Interpreter::FindVariable(std::string const& name) {
+Variable* Interpreter::FindVariable(std::string const& name) {
     return m_Scopes.top()->FindVariable(name);
 }
 
-void Logo2::Interpreter::PushScope() {
+void Interpreter::PushScope() {
     m_Scopes.push(std::make_unique<Scope>(m_Scopes.top().get()));
 }
 
-void Logo2::Interpreter::PopScope() {
+void Interpreter::PopScope() {
     m_Scopes.pop();
 }
 
-Logo2::Scope::Scope(Scope* parent) : m_Parent(parent) {
+Scope::Scope(Scope* parent) : m_Parent(parent) {
 }
 
-bool Logo2::Scope::AddVariable(std::string name, Variable var) {
+bool Scope::AddVariable(std::string name, Variable var) {
     return m_Variables.insert({ std::move(name), std::move(var) }).second;
 }
 
-Variable const* Logo2::Scope::FindVariable(std::string const& name) const {
+Variable const* Scope::FindVariable(std::string const& name) const {
     if (auto it = m_Variables.find(name); it != m_Variables.end())
         return &it->second;
 
     return m_Parent ? m_Parent->FindVariable(name) : nullptr;
 }
 
-Variable* Logo2::Scope::FindVariable(std::string const& name) {
+Variable* Scope::FindVariable(std::string const& name) {
     if (auto it = m_Variables.find(name); it != m_Variables.end())
         return &it->second;
 
