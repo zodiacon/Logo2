@@ -41,7 +41,7 @@ bool Parser::AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet) 
 	return m_PrefixParslets.insert({ type, std::move(parslet) }).second;
 }
 
-void Parser::AddError(ParserError err) {
+void Parser::AddError(ParseError err) {
 	m_Errors.emplace_back(std::move(err));
 }
 
@@ -49,7 +49,7 @@ bool Parser::HasErrors() const {
 	return !m_Errors.empty();
 }
 
-std::span<const ParserError> Parser::Errors() const {
+std::span<const ParseError> Parser::Errors() const {
 	return m_Errors;
 }
 
@@ -66,15 +66,20 @@ std::unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 		}
 		return left;
 	}
-	throw ParserError(ParseErrorType::UnknownOperator, token);
+	throw ParseError(ParseErrorType::UnknownOperator, token);
 }
 
 std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
-	auto next = Next();		// var or const
-	auto name = Next();
+	auto next = Next();		// eat var or const
+	auto name = Next();		// variable name
 	if (name.Type != TokenType::Identifier)
-		throw ParserError(ParseErrorType::IdentifierExpected, name);
+		throw ParseError(ParseErrorType::IdentifierExpected, name);
 
+	{
+		auto sym = FindSymbol(name.Lexeme, true);
+		if (sym)
+			throw ParseError(ParseErrorType::DuplicateDefinition, name, std::format("Symbol {} already defined in scope", name.Lexeme));
+	}
 	std::unique_ptr<Expression> init;
 	if (Match(TokenType::Assign)) {
 		//
@@ -83,16 +88,16 @@ std::unique_ptr<VarStatement> Parser::ParseVarConstStatement(bool constant) {
 		init = ParseExpression();
 	}
 	else if (constant)
-		throw ParserError(ParseErrorType::MissingInitExpression, Peek());
+		throw ParseError(ParseErrorType::MissingInitExpression, Peek());
 
 	if (!Match(TokenType::SemiColon))
-		throw ParserError(ParseErrorType::SemicolonExpected, Peek());
+		throw ParseError(ParseErrorType::SemicolonExpected, Peek());
 	Symbol sym;
 	sym.Name = name.Lexeme;
 	sym.Type = SymbolType::Variable;
 	sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
 	if (!AddSymbol(sym))
-		throw ParserError(ParseErrorType::DuplicateDefinition, name);
+		throw ParseError(ParseErrorType::DuplicateDefinition, name);
 	return std::make_unique<VarStatement>(name.Lexeme, constant, std::move(init));
 }
 
@@ -100,14 +105,14 @@ std::unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	Next();		// eat fn keyword
 	auto ident = Next();
 	if (ident.Type != TokenType::Identifier)
-		throw ParserError(ParseErrorType::IdentifierExpected, ident);
+		throw ParseError(ParseErrorType::IdentifierExpected, ident);
 
 	auto sym = FindSymbol(ident.Lexeme);
 	if (sym)
-		AddError(ParserError(ParseErrorType::DuplicateDefinition, ident));
+		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
 
 	if(!Match(TokenType::OpenParen))
-		throw ParserError(ParseErrorType::OpenParenExpected, ident);
+		throw ParseError(ParseErrorType::OpenParenExpected, ident);
 
 	//
 	// get list of arguments
@@ -116,12 +121,12 @@ std::unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	while (Peek().Type != TokenType::CloseParen) {
 		auto param = Next();
 		if (param.Type != TokenType::Identifier)
-			throw ParserError(ParseErrorType::IdentifierExpected, ident);
+			throw ParseError(ParseErrorType::IdentifierExpected, ident);
 		parameters.push_back(param.Lexeme);
 		if (Match(TokenType::Comma))
 			continue;
 		if(!Match(TokenType::CloseParen, false))
-			throw ParserError(ParseErrorType::CloseParenExpected, ident);
+			throw ParseError(ParseErrorType::CloseParenExpected, ident);
 	}
 
 	Next();		// eat close paren
@@ -151,7 +156,7 @@ std::unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
 	Next();	// eat "while"
 	auto cond = ParseExpression();
 	if (cond == nullptr)
-		AddError(ParserError(ParseErrorType::ConditionExpressionExpected, Peek()));
+		AddError(ParseError(ParseErrorType::ConditionExpressionExpected, Peek()));
 	m_LoopCount++;
 	auto block = ParseBlock();
 	m_LoopCount--;
@@ -160,7 +165,7 @@ std::unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
 
 std::unique_ptr<BlockExpression> Parser::ParseBlock(std::vector<std::string> const& args) {
 	if (!Match(TokenType::OpenBrace))
-		AddError(ParserError(ParseErrorType::OpenBraceExpected, Peek()));
+		AddError(ParseError(ParseErrorType::OpenBraceExpected, Peek()));
 
 	m_Symbols.push(std::make_unique<SymbolTable>(m_Symbols.top().get()));
 
@@ -200,13 +205,15 @@ std::unique_ptr<Statement> Parser::ParseStatement() {
 		case TokenType::Keyword_Break: return ParseBreakContinueStatement(false);
 		case TokenType::Keyword_Continue: return ParseBreakContinueStatement(true);
 		case TokenType::Keyword_For: return ParseForStatement();
+		case TokenType::OpenBrace: return ParseBlock();
 	}
 	auto expr = ParseExpression();
 	if (expr) {
-		Match(TokenType::SemiColon);
-		return std::make_unique<ExpressionStatement>(std::move(expr));
+		if (Match(TokenType::SemiColon))
+			return std::make_unique<ExpressionStatement>(std::move(expr));
+		return expr;
 	}
-	AddError(ParserError(ParseErrorType::InvalidStatement, peek));
+	AddError(ParseError(ParseErrorType::InvalidStatement, peek));
 	return nullptr;
 }
 
@@ -215,7 +222,7 @@ std::unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {
 	auto expr = ParseExpression();
 	if (expr) {
 		if (!Match(TokenType::SemiColon))
-			AddError(ParserError(ParseErrorType::SemicolonExpected, Peek()));
+			AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
 		return std::make_unique<ReturnStatement>(std::move(expr));
 	}
 	return nullptr;
@@ -224,9 +231,9 @@ std::unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {
 std::unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool cont) {
 	Next();		// eat keyword
 	if (!Match(TokenType::SemiColon))
-		AddError(ParserError(ParseErrorType::SemicolonExpected, Peek()));
+		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
 	if(m_LoopCount == 0)
-		AddError(ParserError(ParseErrorType::BreakContinueNoLoop, Peek()));
+		AddError(ParseError(ParseErrorType::BreakContinueNoLoop, Peek()));
 
 	return std::make_unique<BreakOrContinueStatement>(cont);
 }
@@ -235,11 +242,11 @@ std::unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Next();		// eat for
 	auto init = ParseStatement();
 	if(init->Type() != NodeType::Var && init->Type() != NodeType::Expression)
-		AddError(ParserError(ParseErrorType::ExpressionOrVarExpected, Peek()));
+		AddError(ParseError(ParseErrorType::ExpressionOrVarExpected, Peek()));
 
 	auto whileExpr = ParseExpression();
 	if (!Match(TokenType::SemiColon))
-		AddError(ParserError(ParseErrorType::SemicolonExpected, Peek()));
+		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
 
 	auto inc = ParseExpression();
 	m_LoopCount++;
@@ -328,8 +335,8 @@ void Parser::Init() {
 	AddParslet(TokenType::Xor, std::make_unique<BinaryOperatorParslet>(390));
 }
 
-std::unique_ptr<LogoAstNode> Parser::DoParse() {
-	auto block = std::make_unique<BlockExpression>();
+std::unique_ptr<Statements> Parser::DoParse() {
+	auto block = std::make_unique<Statements>();
 	while (true) {
 		auto stmt = ParseStatement();
 		if (stmt == nullptr)
@@ -376,8 +383,8 @@ bool Parser::AddSymbol(Symbol sym) {
 	return m_Symbols.top()->AddSymbol(std::move(sym));
 }
 
-Symbol const* Parser::FindSymbol(std::string const& name) const {
-	return m_Symbols.top()->FindSymbol(name);
+Symbol const* Parser::FindSymbol(std::string const& name, bool localOnly) const {
+	return m_Symbols.top()->FindSymbol(name, localOnly);
 }
 
 

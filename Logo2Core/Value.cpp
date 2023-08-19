@@ -31,6 +31,15 @@ namespace Logo2 {
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
+	double Value::ToDouble() const {
+		switch (m_Value.index()) {
+			case 0: return (double)Integer();
+			case 1: return Real();
+			case 2: return Boolean() ? 1.0 : 0.0;
+		}
+		throw RuntimeError(ErrorType::TypeMismatch);
+	}
+
 	long long Value::ToInteger() const {
 		switch (m_Value.index()) {
 			case 0: return Integer();

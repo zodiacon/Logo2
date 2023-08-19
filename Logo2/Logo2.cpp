@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
 				printf("Runtime error: %d\n", (int)err.Error);
 			}
 		}
-		catch (ParserError const& err) {
+		catch (ParseError const& err) {
 			printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
 			return 1;
 		}
@@ -108,7 +108,7 @@ int main(int argc, const char* argv[]) {
 				printf("Runtime error: %d\n", (int)err.Error);
 			}
 		}
-		catch (ParserError const& err) {
+		catch (ParseError const& err) {
 			printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
 			continue;
 		}

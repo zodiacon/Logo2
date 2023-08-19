@@ -308,3 +308,14 @@ BlockExpression const* Logo2::ForStatement::Body() const {
 	return m_Body.get();
 }
 
+Value Statements::Accept(Visitor* visitor) const {
+	return visitor->VisitStatements(this);
+}
+
+void Logo2::Statements::Add(std::unique_ptr<Statement> stmt) {
+	m_Stmts.push_back(std::move(stmt));
+}
+
+std::vector<std::unique_ptr<Statement>> const& Statements::Get() const {
+	return m_Stmts;
+}

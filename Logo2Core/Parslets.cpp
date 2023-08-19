@@ -59,15 +59,15 @@ std::unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& tok
 std::unique_ptr<Expression> AssignParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(Precedence() - 1);
 	if (left->Type() != NodeType::Name) {
-		throw ParserError(ParseErrorType::IdentifierExpected, token);
+		throw ParseError(ParseErrorType::IdentifierExpected, token);
 	}
 	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
 	auto sym = parser.FindSymbol(nameExpr->Name());
 	if (!sym)
-		throw ParserError(ParseErrorType::UndefinedSymbol, token);
+		throw ParseError(ParseErrorType::UndefinedSymbol, token);
 
 	if ((sym->Flags & SymbolFlags::Const) == SymbolFlags::Const)
-		throw ParserError(ParseErrorType::CannotModifyConst, token);
+		throw ParseError(ParseErrorType::CannotModifyConst, token);
 	parser.Match(TokenType::SemiColon);
 	return std::make_unique<AssignExpression>(nameExpr->Name(), std::move(right));
 }
@@ -81,7 +81,7 @@ InvokeFunctionParslet::InvokeFunctionParslet() : PostfixOperatorParslet(1200) {
 
 std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
 	if (left->Type() != NodeType::Name)
-		throw ParserError(ParseErrorType::Syntax, token);
+		throw ParseError(ParseErrorType::Syntax, token);
 
 	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
 	//auto sym = parser.FindSymbol(nameExpr->Name());
@@ -94,7 +94,7 @@ std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::un
 		auto param = parser.ParseExpression();
 		args.push_back(std::move(param));
 		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
-			throw ParserError(ParseErrorType::CommaExpected, next);
+			throw ParseError(ParseErrorType::CommaExpected, next);
 		next = parser.Peek();
 	}
 	parser.Next();		// eat close paren

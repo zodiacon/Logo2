@@ -25,7 +25,7 @@ namespace Logo2 {
 	public:
 		explicit SymbolTable(SymbolTable* parent = nullptr);
 		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name) const;
+		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
 
 	private:
 		std::unordered_map<std::string, Symbol> m_Symbols;

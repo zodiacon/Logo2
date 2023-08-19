@@ -28,7 +28,17 @@ namespace Logo2 {
 	class Statement abstract : public LogoAstNode {
 	};
 
-	class Expression abstract : public LogoAstNode {
+	class Statements final : public Statement {
+	public:
+		Value Accept(Visitor* visitor) const override;
+		void Add(std::unique_ptr<Statement> stmt);
+		std::vector<std::unique_ptr<Statement>> const& Get() const;
+
+	private:
+		std::vector<std::unique_ptr<Statement>> m_Stmts;
+	};
+
+	class Expression abstract : public Statement {
 	public:
 		NodeType Type() const override;
 	};
@@ -37,7 +47,7 @@ namespace Logo2 {
 	public:
 		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
 		NodeType Type() const override;
-		virtual Value Accept(Visitor* visitor) const;
+		Value Accept(Visitor* visitor) const override;
 		Expression const* Expr() const;
 
 	private:

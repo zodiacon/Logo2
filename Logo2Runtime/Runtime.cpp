@@ -2,6 +2,7 @@
 #include "Runtime.h"
 #include <Interpreter.h>
 #include <cassert>
+#include <print>
 
 #pragma comment(lib, "gdiplus")
 
@@ -35,6 +36,14 @@ Runtime::Runtime(Interpreter& inter) {
         });
     inter.AddNativeFunction("pencolor", 3, [this](auto& intr, auto& args) -> Value {
         GetTurtle().SetPenColor((BYTE)args[0].ToInteger(), (BYTE)args[1].ToInteger(), (BYTE)args[2].ToInteger());
+        return Value();
+        });
+    inter.AddNativeFunction("print", 1, [this](auto& intr, auto& args) -> Value {
+        std::printf(args[0].ToString().c_str());
+        return Value();
+        });
+    inter.AddNativeFunction("println", 1, [this](auto& intr, auto& args) -> Value {
+        std::printf("%s\n", args[0].ToString().c_str());
         return Value();
         });
 
