@@ -12,6 +12,7 @@ namespace Logo2 {
 		DivisionByZero,
 		UndefinedOperator,
 		UndefinedSymbol,
+		NotCallable,
 	};
 
 	struct RuntimeError {

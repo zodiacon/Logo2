@@ -333,6 +333,7 @@ void Parser::Init() {
 	AddParslet(TokenType::And, std::make_unique<BinaryOperatorParslet>(400));
 	AddParslet(TokenType::Or, std::make_unique<BinaryOperatorParslet>(390));
 	AddParslet(TokenType::Xor, std::make_unique<BinaryOperatorParslet>(390));
+	AddParslet(TokenType::Keyword_Fn, std::make_unique<AnonymousFunctionParslet>());
 }
 
 std::unique_ptr<Statements> Parser::DoParse() {

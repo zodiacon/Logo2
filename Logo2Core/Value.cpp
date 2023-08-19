@@ -3,6 +3,9 @@
 #include <Errors.h>
 
 namespace Logo2 {
+	Value::Value(std::shared_ptr<Function> f) : m_Value(f) {
+	}
+
 	bool Value::IsInteger() const {
 		return m_Value.index() == 0;
 	}
@@ -13,6 +16,10 @@ namespace Logo2 {
 
 	bool Value::IsReal() const {
 		return m_Value.index() == 1;
+	}
+
+	bool Value::IsFunction() const {
+		return m_Value.index() == 5;
 	}
 
 	float Value::ToFloat() const {
@@ -69,6 +76,7 @@ namespace Logo2 {
 	Value Value::operator~() const {
 		switch (m_Value.index()) {
 			case 0:	return ~Integer();
+			case 2: return !Boolean();
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
@@ -77,8 +85,8 @@ namespace Logo2 {
 		switch (Index() | (other.Index() << 4)) {
 			case 0: return Integer() == other.Integer();
 			case 1: return Real() == other.Integer();
-			case 16: return Integer() == other.Real();
-			case 17: return Real() == other.Real();
+			case 1 << 4: return Integer() == other.Real();
+			case 1 | (1 << 4): return Real() == other.Real();
 		}
 		return false;
 	}
@@ -101,6 +109,10 @@ namespace Logo2 {
 
 	std::string const& Value::String() const {
 		return std::get<3>(m_Value);
+	}
+
+	Function const* const Value::Func() const {
+		return std::get<5>(m_Value).get();
 	}
 
 	int Value::Index() const {
@@ -158,7 +170,7 @@ namespace Logo2 {
 	Value operator|(Value const& left, Value const& right) {
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() | right.Integer();
-				case 2 | (2 << 4) : return bool(left.Boolean() | right.Boolean());
+			case 2 | (2 << 4) : return bool(left.Boolean() | right.Boolean());
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
@@ -166,7 +178,7 @@ namespace Logo2 {
 	Value operator^(Value const& left, Value const& right) {
 		switch (left.Index() | (right.Index() << 4)) {
 			case 0: return left.Integer() ^ right.Integer();
-				case 2 | (2 << 4) : return bool(left.Boolean() ^ right.Boolean());
+			case 2 | (2 << 4) : return bool(left.Boolean() ^ right.Boolean());
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
@@ -208,6 +220,7 @@ namespace Logo2 {
 			case 1 << 4: return left.Integer() <=> right.Real();
 			case 1 | (1 << 4): return left.Real() <=> right.Real();
 			case 2 << 4: return left.Integer() <=> (int)right.Boolean();
+			case 2 | (2 << 4) : return left.Boolean() <=> right.Boolean();
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}

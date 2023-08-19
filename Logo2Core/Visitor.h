@@ -20,6 +20,7 @@ namespace Logo2 {
 	class BreakOrContinueStatement;
 	class ForStatement;
 	class Statements;
+	class AnonymousFunctionExpression;
 
 	class Visitor abstract {
 	public:
@@ -40,6 +41,7 @@ namespace Logo2 {
 		virtual Value VisitBreakContinue(BreakOrContinueStatement const* stmt) = 0;
 		virtual Value VisitFor(ForStatement const* stmt) = 0;
 		virtual Value VisitStatements(Statements const* stmts) = 0;
+		virtual Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) = 0;
 	};
 }
 

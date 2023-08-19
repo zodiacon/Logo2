@@ -3,14 +3,11 @@
 #include "Logo2Ast.h"
 #include "Value.h"
 #include "Logo2Core.h"
-#include <functional>
 #include <stack>
 #include "Visitor.h"
 
 namespace Logo2 {
 	class Interpreter;
-
-	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
 
 	enum class VariableFlags {
 		None,
@@ -64,22 +61,18 @@ namespace Logo2 {
 		Value VisitBreakContinue(BreakOrContinueStatement const* stmt) override;
 		Value VisitFor(ForStatement const* stmt) override;
 		Value VisitStatements(Statements const* stmts) override;
+		Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) override;
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 		bool AddVariable(std::string name, Variable var);
 		Variable const* FindVariable(std::string const& name) const;
 		Variable* FindVariable(std::string const& name);
+		Value InvokeFunction(Function const& f, InvokeFunctionExpression const* expr);
 
 	private:
 		void PushScope();
 		void PopScope();
 
-		struct Function {
-			int ArgCount;
-			BlockExpression const* Code{ nullptr };
-			NativeFunction NativeCode;
-			std::vector<std::string> Parameters;
-		};
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
 		std::unordered_map<std::string, Function> m_Functions;
 	};

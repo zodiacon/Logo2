@@ -262,4 +262,16 @@ namespace Logo2 {
 		std::unique_ptr<BlockExpression> m_Body;
 	};
 
+	class AnonymousFunctionExpression : public Expression {
+	public:
+		AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<BlockExpression> body);
+		Value Accept(Visitor* visitor) const override;
+		std::vector<std::string> const& Args() const;
+		BlockExpression const* Body() const;
+
+	private:
+		std::vector<std::string> m_Args;
+		std::unique_ptr<BlockExpression> m_Body;
+	};
+
 }

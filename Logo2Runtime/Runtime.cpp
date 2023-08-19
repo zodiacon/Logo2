@@ -3,6 +3,7 @@
 #include <Interpreter.h>
 #include <cassert>
 #include <print>
+#include <Value.h>
 
 #pragma comment(lib, "gdiplus")
 

@@ -319,3 +319,19 @@ void Logo2::Statements::Add(std::unique_ptr<Statement> stmt) {
 std::vector<std::unique_ptr<Statement>> const& Statements::Get() const {
 	return m_Stmts;
 }
+
+Logo2::AnonymousFunctionExpression::AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<BlockExpression> body) :
+	m_Args(std::move(args)), m_Body(std::move(body)) {
+}
+
+Value Logo2::AnonymousFunctionExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAnonymousFunction(this);
+}
+
+std::vector<std::string> const& Logo2::AnonymousFunctionExpression::Args() const {
+	return m_Args;
+}
+
+BlockExpression const* Logo2::AnonymousFunctionExpression::Body() const {
+	return m_Body.get();
+}

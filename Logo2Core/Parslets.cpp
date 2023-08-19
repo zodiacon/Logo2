@@ -109,3 +109,30 @@ std::unique_ptr<Expression> Logo2::IfThenElseParslet::Parse(Parser& parser, Toke
 		elseExpr = parser.ParseBlock();
 	return std::make_unique<IfThenElseExpression>(std::move(cond), std::move(then), std::move(elseExpr));
 }
+
+std::unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
+	assert(token.Type == TokenType::Keyword_Fn);
+	if (!parser.Match(TokenType::OpenParen))
+		throw ParseError(ParseErrorType::OpenParenExpected, parser.Peek());
+
+	//
+	// parse args
+	//
+	std::vector<std::string> args;
+	while (parser.Peek().Type != TokenType::CloseParen) {
+		auto arg = parser.Next();
+		if(arg.Type != TokenType::Identifier)
+			throw ParseError(ParseErrorType::IdentifierExpected, arg);
+		args.push_back(std::move(arg.Lexeme));
+		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::CloseParen, false))
+			continue;
+		throw ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek());
+	}
+	parser.Next();		// eat close paren
+	auto block = parser.ParseBlock(args);
+	return std::make_unique<AnonymousFunctionExpression>(std::move(args), std::move(block));
+}
+
+int Logo2::AnonymousFunctionParslet::Precedence() const {
+	return 2000;
+}

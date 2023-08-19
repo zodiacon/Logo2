@@ -73,4 +73,10 @@ namespace Logo2 {
 	struct IfThenElseParslet : PrefixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
 	};
+
+	struct AnonymousFunctionParslet : PrefixParslet {
+		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
+		int Precedence() const override;
+	};
+
 }

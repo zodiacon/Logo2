@@ -104,53 +104,61 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
         v->VarValue = Eval(expr->Value());
         return v->VarValue;
     }
-    assert(false);
-    return Value();
+    throw RuntimeError(ErrorType::UndefinedSymbol, expr);
 }
 
 Value Interpreter::VisitPostfix(PostfixExpression const* expr) {
     return Value();
 }
 
+Value Interpreter::InvokeFunction(Function const& f, InvokeFunctionExpression const* expr) {
+    if (f.ArgCount != expr->Arguments().size())
+        throw RuntimeError(ErrorType::ArgumentCountMismatch, expr);
+
+    std::vector<Value> args;
+    for (auto& arg : expr->Arguments()) {
+        args.push_back(arg->Accept(this));
+    }
+    if (f.NativeCode)
+        return f.NativeCode(*this, args);
+    else if (f.Code) {
+        //
+        // bind arguments
+        //
+        assert(f.ArgCount == args.size());
+        auto scopes = m_Scopes.size();
+        PushScope();
+        for (int i = 0; i < f.ArgCount; i++) {
+            Variable v;
+            v.Flags = VariableFlags::None;
+            v.VarValue = std::move(args[i]);
+            AddVariable(f.Parameters[i], std::move(v));
+        }
+        Value result;
+        try {
+            result = Eval(f.Code);
+        }
+        catch (Return const& ret) {
+            result = ret.ReturnValue->Accept(this);
+        }
+        while (m_Scopes.size() > scopes)
+            PopScope();
+        return result;
+    }
+    assert(false);
+    return nullptr;
+}
+
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     if (auto it = m_Functions.find(expr->Name()); it != m_Functions.end()) {
-        auto& f = it->second;
-        if (f.ArgCount != expr->Arguments().size())
-            throw RuntimeError(ErrorType::ArgumentCountMismatch, expr);
-
-        std::vector<Value> args;
-        for (auto& arg : expr->Arguments()) {
-            args.push_back(arg->Accept(this));
-        }
-        if (f.NativeCode)
-            return f.NativeCode(*this, args);
-        else if (f.Code) {
-            //
-            // bind arguments
-            //
-            assert(f.ArgCount == args.size());
-            auto scopes = m_Scopes.size();
-            PushScope();
-            for (int i = 0; i < f.ArgCount; i++) {
-                Variable v;
-                v.Flags = VariableFlags::None;
-                v.VarValue = std::move(args[i]);
-                AddVariable(f.Parameters[i], std::move(v));
-            }
-            Value result;
-            try {
-                result = Eval(f.Code);
-            }
-            catch (Return const& ret) {
-                result = ret.ReturnValue->Accept(this);
-            }
-            while(m_Scopes.size() > scopes)
-                PopScope();
-            return result;
-        }
-        assert(false);
+        return InvokeFunction(it->second, expr);
     }
-
+    auto var = FindVariable(expr->Name());
+    if (var) {
+        if (var->VarValue.IsFunction())
+            return InvokeFunction(*(var->VarValue.Func()), expr);
+        throw RuntimeError(ErrorType::NotCallable, expr);
+    }
     throw RuntimeError(ErrorType::UndefinedFunction);
 }
 
@@ -237,11 +245,19 @@ Value Interpreter::VisitFor(ForStatement const* stmt) {
     return nullptr;
 }
 
-Value Logo2::Interpreter::VisitStatements(Statements const* stmts) {
+Value Interpreter::VisitStatements(Statements const* stmts) {
     Value result;
     for (auto& stmt : stmts->Get())
         result = Eval(stmt.get());
     return result;
+}
+
+Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* func) {
+    auto f = std::make_shared<Function>();
+    f->ArgCount = (int)func->Args().size();
+    f->Code = func->Body();
+    f->Parameters = func->Args();
+    return Value(f);
 }
 
 bool Interpreter::AddNativeFunction(std::string name, int arity, NativeFunction nf) {

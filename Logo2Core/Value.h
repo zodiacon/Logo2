@@ -1,16 +1,34 @@
 #pragma once
 
+#include <functional>
+#include <vector>
+
 namespace Logo2 {
+	class BlockExpression;
+	class Interpreter;
+	struct Value;
+
+	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
+
+	struct Function {
+		int ArgCount;
+		BlockExpression const* Code{ nullptr };
+		NativeFunction NativeCode;
+		std::vector<std::string> Parameters;
+	};
+
 	struct Value {
 		Value(double d) : m_Value(d) {}
 		Value(long long n) : m_Value(n) {}
 		Value(bool b) : m_Value(b) {}
 		Value(nullptr_t = nullptr) : m_Value(nullptr) {}
 		Value(std::string s) : m_Value(std::move(s)) {}
+		Value(std::shared_ptr<Function> f);
 
 		bool IsInteger() const;
 		bool IsBoolean() const;
 		bool IsReal() const;
+		bool IsFunction() const;
 
 		float ToFloat() const;
 		bool ToBoolean() const;
@@ -36,11 +54,12 @@ namespace Logo2 {
 		double Real() const;
 		bool Boolean() const;
 		std::string const& String() const;
+		Function const* const Func() const;
 
 		int Index() const;
 		std::string ToString() const;
 
 	private:
-		std::variant<long long, double, bool, std::string, nullptr_t> m_Value;
+		std::variant<long long, double, bool, std::string, nullptr_t, std::shared_ptr<Function>> m_Value;
 	};
 }
