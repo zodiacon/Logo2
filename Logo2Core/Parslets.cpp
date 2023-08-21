@@ -129,6 +129,10 @@ std::unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parse
 		throw ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek());
 	}
 	parser.Next();		// eat close paren
+	if (parser.Match(TokenType::GoesTo)) {
+		auto expr = parser.ParseExpression();
+		return std::make_unique<AnonymousFunctionExpression>(std::move(args), std::move(expr));
+	}
 	auto block = parser.ParseBlock(args);
 	return std::make_unique<AnonymousFunctionExpression>(std::move(args), std::move(block));
 }

@@ -242,7 +242,7 @@ Expression const* Logo2::IfThenElseExpression::Else() const {
 	return m_Else.get();
 }
 
-Logo2::FunctionDeclaration::FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<BlockExpression> body) : 
+Logo2::FunctionDeclaration::FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<Expression> body) : 
 	m_Name(std::move(name)), m_Parameters(std::move(parameters)), m_Body(std::move(body)) {
 }
 
@@ -258,7 +258,7 @@ std::vector<std::string> const& Logo2::FunctionDeclaration::Parameters() const {
 	return m_Parameters;
 }
 
-BlockExpression const* Logo2::FunctionDeclaration::Body() const {
+Expression const* Logo2::FunctionDeclaration::Body() const {
 	return m_Body.get();
 }
 
@@ -312,7 +312,7 @@ Value Statements::Accept(Visitor* visitor) const {
 	return visitor->VisitStatements(this);
 }
 
-void Logo2::Statements::Add(std::unique_ptr<Statement> stmt) {
+void Statements::Add(std::unique_ptr<Statement> stmt) {
 	m_Stmts.push_back(std::move(stmt));
 }
 
@@ -320,7 +320,7 @@ std::vector<std::unique_ptr<Statement>> const& Statements::Get() const {
 	return m_Stmts;
 }
 
-Logo2::AnonymousFunctionExpression::AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<BlockExpression> body) :
+AnonymousFunctionExpression::AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<Expression> body) :
 	m_Args(std::move(args)), m_Body(std::move(body)) {
 }
 
@@ -332,6 +332,6 @@ std::vector<std::string> const& Logo2::AnonymousFunctionExpression::Args() const
 	return m_Args;
 }
 
-BlockExpression const* Logo2::AnonymousFunctionExpression::Body() const {
+Expression const* Logo2::AnonymousFunctionExpression::Body() const {
 	return m_Body.get();
 }

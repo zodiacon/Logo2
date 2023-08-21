@@ -29,6 +29,7 @@ namespace Logo2 {
 		Dot,
 		Comma,
 		SemiColon,
+		GoesTo,
 		Assign,
 		Assign_Add,
 		Assign_Sub,

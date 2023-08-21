@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace Logo2 {
-	class BlockExpression;
+	class Expression;
 	class Interpreter;
 	struct Value;
 
@@ -12,7 +12,7 @@ namespace Logo2 {
 
 	struct Function {
 		int ArgCount;
-		BlockExpression const* Code{ nullptr };
+		Expression const* Code{ nullptr };
 		NativeFunction NativeCode;
 		std::vector<std::string> Parameters;
 	};

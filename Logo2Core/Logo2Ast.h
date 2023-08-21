@@ -156,16 +156,16 @@ namespace Logo2 {
 
 	class FunctionDeclaration : public Statement {
 	public:
-		FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<BlockExpression> body);
+		FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<Expression> body);
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const;
 		std::vector<std::string> const& Parameters() const;
-		BlockExpression const* Body() const;
+		Expression const* Body() const;
 	private:
 		std::string m_Name;
 		std::vector<std::string> m_Parameters;
-		std::unique_ptr<BlockExpression> m_Body;
+		std::unique_ptr<Expression> m_Body;
 	};
 
 	class PostfixExpression : public Expression {
@@ -264,14 +264,14 @@ namespace Logo2 {
 
 	class AnonymousFunctionExpression : public Expression {
 	public:
-		AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<BlockExpression> body);
+		AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<Expression> body);
 		Value Accept(Visitor* visitor) const override;
 		std::vector<std::string> const& Args() const;
-		BlockExpression const* Body() const;
+		Expression const* Body() const;
 
 	private:
 		std::vector<std::string> m_Args;
-		std::unique_ptr<BlockExpression> m_Body;
+		std::unique_ptr<Expression> m_Body;
 	};
 
 }

@@ -111,7 +111,7 @@ std::unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	if (sym)
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
 
-	if(!Match(TokenType::OpenParen))
+	if (!Match(TokenType::OpenParen))
 		throw ParseError(ParseErrorType::OpenParenExpected, ident);
 
 	//
@@ -125,12 +125,17 @@ std::unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		parameters.push_back(param.Lexeme);
 		if (Match(TokenType::Comma))
 			continue;
-		if(!Match(TokenType::CloseParen, false))
+		if (!Match(TokenType::CloseParen, false))
 			throw ParseError(ParseErrorType::CloseParenExpected, ident);
 	}
 
 	Next();		// eat close paren
-	auto body = ParseBlock(parameters);
+	std::unique_ptr<Expression> body;
+	if (Match(TokenType::GoesTo))
+		body = ParseExpression();
+	else
+		body = ParseBlock(parameters);
+
 	auto decl = std::make_unique<FunctionDeclaration>(std::move(ident.Lexeme), std::move(parameters), std::move(body));
 	if (decl && sym == nullptr) {
 		Symbol sym;
@@ -292,6 +297,7 @@ void Parser::Init() {
 		{ "]", TokenType::CloseBracket },
 		{ ";", TokenType::SemiColon },
 		{ ",", TokenType::Comma },
+		{ "=>", TokenType::GoesTo },
 		{ "null", TokenType::Keyword_Null },
 		{ "true", TokenType::Keyword_True },
 		{ "false", TokenType::Keyword_False },
