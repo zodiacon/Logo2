@@ -7,6 +7,7 @@ namespace Logo2 {
 	class Expression;
 	class Interpreter;
 	struct Value;
+	struct Scope;
 
 	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
 
@@ -15,6 +16,7 @@ namespace Logo2 {
 		Expression const* Code{ nullptr };
 		NativeFunction NativeCode;
 		std::vector<std::string> Parameters;
+		std::unique_ptr<Scope> Environment;
 	};
 
 	struct Value {
@@ -47,8 +49,7 @@ namespace Logo2 {
 		Value operator!() const;
 		Value operator~() const;
 		friend std::partial_ordering operator<=>(Value const& left, Value const& right);
-		bool operator==(Value const& other);
-		bool operator!=(Value const& other);
+		bool operator==(Value const& other) const;
 
 		long long Integer() const;
 		double Real() const;

@@ -81,7 +81,7 @@ namespace Logo2 {
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}
 
-	bool Value::operator==(Value const& other) {
+	bool Value::operator==(Value const& other) const {
 		switch (Index() | (other.Index() << 4)) {
 			case 0: return Integer() == other.Integer();
 			case 1: return Real() == other.Integer();
@@ -89,10 +89,6 @@ namespace Logo2 {
 			case 1 | (1 << 4): return Real() == other.Real();
 		}
 		return false;
-	}
-
-	bool Value::operator!=(Value const& other) {
-		return !(*this == other);
 	}
 
 	long long Value::Integer() const {

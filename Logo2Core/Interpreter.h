@@ -25,6 +25,7 @@ namespace Logo2 {
 		bool AddVariable(std::string name, Variable var);
 		Variable const* FindVariable(std::string const& name) const;
 		Variable* FindVariable(std::string const& name);
+		std::unique_ptr<Scope> Clone(Scope* parent = nullptr) const;
 
 	private:
 		std::unordered_map<std::string, Variable> m_Variables;

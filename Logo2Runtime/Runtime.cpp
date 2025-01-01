@@ -10,41 +10,41 @@
 using namespace Logo2;
 
 Runtime::Runtime(Interpreter& inter) {
-    inter.AddNativeFunction("fd", 1, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("fd", 1, [this](auto& intr, auto& args) {
         GetTurtle().Forward(args[0].ToFloat());
         return Value();
         });
-    inter.AddNativeFunction("bk", 1, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("bk", 1, [this](auto& intr, auto& args) {
         GetTurtle().Back(args[0].ToFloat());
         return Value();
         });
-    inter.AddNativeFunction("penwidth", 1, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("penwidth", 1, [this](auto& intr, auto& args) {
         GetTurtle().SetPenWidth(args[0].ToFloat());
         return Value();
         });
-    inter.AddNativeFunction("rt", 1, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("rt", 1, [this](auto& intr, auto& args) {
         auto& t = GetTurtle();
         t.Rotate(args[0].ToFloat());
         return Value();
         });
-    inter.AddNativeFunction("penup", 0, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("penup", 0, [this](auto& intr, auto& args) {
         GetTurtle().Penup();
         return Value();
         });
-    inter.AddNativeFunction("pendown", 0, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("pendown", 0, [this](auto& intr, auto& args) {
         GetTurtle().Pendown();
         return Value();
         });
-    inter.AddNativeFunction("pencolor", 3, [this](auto& intr, auto& args) -> Value {
+    inter.AddNativeFunction("pencolor", 3, [this](auto& intr, auto& args) {
         GetTurtle().SetPenColor((BYTE)args[0].ToInteger(), (BYTE)args[1].ToInteger(), (BYTE)args[2].ToInteger());
         return Value();
         });
-    inter.AddNativeFunction("print", 1, [this](auto& intr, auto& args) -> Value {
-        std::printf(args[0].ToString().c_str());
+    inter.AddNativeFunction("print", 1, [this](auto& intr, auto& args) {
+        std::print("{}", args[0].ToString());
         return Value();
         });
-    inter.AddNativeFunction("println", 1, [this](auto& intr, auto& args) -> Value {
-        std::printf("%s\n", args[0].ToString().c_str());
+    inter.AddNativeFunction("println", 1, [this](auto& intr, auto& args) {
+        std::println("{}", args[0].ToString());
         return Value();
         });
 

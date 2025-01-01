@@ -2,19 +2,21 @@
 #include "Tokenizer.h"
 #include <assert.h>
 
-bool Logo2::Tokenizer::Tokenize(std::string text, int line) {
-	m_Text = std::move(text);
+using namespace std;
+
+bool Logo2::Tokenizer::Tokenize(string text, int line) {
+	m_Text = move(text);
 	m_Line = line;
 	m_Col = 1;
 	m_Current = m_Text.data();
 	return true;
 }
 
-bool Logo2::Tokenizer::AddToken(std::string lexeme, TokenType type) {
-	return m_TokenTypes.insert({ std::move(lexeme), type }).second;
+bool Logo2::Tokenizer::AddToken(string lexeme, TokenType type) {
+	return m_TokenTypes.try_emplace(move(lexeme), type).second;
 }
 
-int Logo2::Tokenizer::AddTokens(std::span<std::pair<std::string, TokenType>> tokens) {
+int Logo2::Tokenizer::AddTokens(span<pair<string, TokenType>> tokens) {
 	auto count = 0;
 	for (auto const& [str, type] : tokens)
 		count += AddToken(str, type);
@@ -84,7 +86,7 @@ void Logo2::Tokenizer::EatWhitespace() {
 }
 
 Logo2::Token Logo2::Tokenizer::ParseIdentifier() {
-	std::string lexeme;
+	string lexeme;
 	while (*m_Current && !isspace(*m_Current) && !ispunct(*m_Current)) {
 		if (ProcessSingleLineComment())
 			break;
@@ -96,7 +98,7 @@ Logo2::Token Logo2::Tokenizer::ParseIdentifier() {
 	if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end())
 		type = it->second;
 	int len = (int)lexeme.length();
-	return Token{ .Type = type, .Lexeme = std::move(lexeme), .Line = m_Line, .Col = m_Col - len, };
+	return Token{ .Type = type, .Lexeme = move(lexeme), .Line = m_Line, .Col = m_Col - len, };
 }
 
 Logo2::Token Logo2::Tokenizer::ParseNumber() {
@@ -108,7 +110,7 @@ Logo2::Token Logo2::Tokenizer::ParseNumber() {
 	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
 	m_Col += (int)len;
 	m_Current += len;
-	auto token = Token{ .Type = type, .Lexeme = std::string(m_Current - len, m_Current), .Line = m_Line, .Col = m_Col - len };
+	auto token = Token{ .Type = type, .Lexeme = string(m_Current - len, m_Current), .Line = m_Line, .Col = m_Col - len };
 	if (*m_Current == '\n') {
 		m_Col = 1;
 		m_Line++;
@@ -119,7 +121,7 @@ Logo2::Token Logo2::Tokenizer::ParseNumber() {
 }
 
 Logo2::Token Logo2::Tokenizer::ParseOperator() {
-	std::string lexeme;
+	string lexeme;
 	while (*m_Current && ispunct(*m_Current)) {
 		//
 		// treat parenthesis as special so they are not combined with other operators
@@ -156,7 +158,7 @@ Logo2::Token Logo2::Tokenizer::ParseOperator() {
 }
 
 Logo2::Token Logo2::Tokenizer::ParseString() {
-	std::string lexeme;
+	string lexeme;
 	while (*++m_Current && *m_Current != '\"') {
 		lexeme += *m_Current;
 		m_Col++;

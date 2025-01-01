@@ -3,12 +3,13 @@
 #include "Parser.h"
 
 using namespace Logo2;
+using namespace std;
 
 PostfixOperatorParslet::PostfixOperatorParslet(int precedence) : m_Precedence(precedence) {
 }
 
-std::unique_ptr<Expression> PostfixOperatorParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	return std::make_unique<PostfixExpression>(std::move(left), token);
+unique_ptr<Expression> PostfixOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
+	return make_unique<PostfixExpression>(move(left), token);
 }
 
 BinaryOperatorParslet::BinaryOperatorParslet(int precedence, bool right) : m_Precedence(precedence), m_RightAssoc(right) {
@@ -29,34 +30,34 @@ int PostfixOperatorParslet::Precedence() const {
 	return m_Precedence;
 }
 
-std::unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<NameExpression>(token.Lexeme);
+unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
+	return make_unique<NameExpression>(token.Lexeme);
 }
 
-std::unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<UnaryExpression>(token, parser.ParseExpression(m_Precedence));
+unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
+	return make_unique<UnaryExpression>(token, parser.ParseExpression(m_Precedence));
 }
 
-std::unique_ptr<Expression> NumberParslet::Parse(Parser& parser, Token const& token) {
-	return std::make_unique<LiteralExpression>(token);
+unique_ptr<Expression> NumberParslet::Parse(Parser& parser, Token const& token) {
+	return make_unique<LiteralExpression>(token);
 }
 
-std::unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(m_Precedence - (m_RightAssoc ? 1 : 0));
-	return std::make_unique<BinaryExpression>(std::move(left), token, std::move(right));
+	return make_unique<BinaryExpression>(move(left), token, move(right));
 }
 
 int GroupParslet::Precedence() const {
 	return 1000;
 }
 
-std::unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
+unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 	auto expr = parser.ParseExpression();
 	parser.Match(TokenType::CloseParen);
 	return expr;
 }
 
-std::unique_ptr<Expression> AssignParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(Precedence() - 1);
 	if (left->Type() != NodeType::Name) {
 		throw ParseError(ParseErrorType::IdentifierExpected, token);
@@ -69,7 +70,7 @@ std::unique_ptr<Expression> AssignParslet::Parse(Parser& parser, std::unique_ptr
 	if ((sym->Flags & SymbolFlags::Const) == SymbolFlags::Const)
 		throw ParseError(ParseErrorType::CannotModifyConst, token);
 	parser.Match(TokenType::SemiColon);
-	return std::make_unique<AssignExpression>(nameExpr->Name(), std::move(right));
+	return make_unique<AssignExpression>(nameExpr->Name(), move(right));
 }
 
 int AssignParslet::Precedence() const {
@@ -79,7 +80,7 @@ int AssignParslet::Precedence() const {
 InvokeFunctionParslet::InvokeFunctionParslet() : PostfixOperatorParslet(1200) {
 }
 
-std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	if (left->Type() != NodeType::Name)
 		throw ParseError(ParseErrorType::Syntax, token);
 
@@ -89,28 +90,28 @@ std::unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, std::un
 	//	parser.AddError(ParserError(ParseErrorType::UndefinedSymbol, token));
 
 	auto next = parser.Peek();
-	std::vector<std::unique_ptr<Expression>> args;
+	vector<unique_ptr<Expression>> args;
 	while (next.Type != TokenType::CloseParen) {
 		auto param = parser.ParseExpression();
-		args.push_back(std::move(param));
+		args.push_back(move(param));
 		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
 			throw ParseError(ParseErrorType::CommaExpected, next);
 		next = parser.Peek();
 	}
 	parser.Next();		// eat close paren
-	return std::make_unique<InvokeFunctionExpression>(nameExpr->Name(), std::move(args));
+	return make_unique<InvokeFunctionExpression>(nameExpr->Name(), move(args));
 }
 
-std::unique_ptr<Expression> Logo2::IfThenElseParslet::Parse(Parser& parser, Token const& token) {
+unique_ptr<Expression> Logo2::IfThenElseParslet::Parse(Parser& parser, Token const& token) {
 	auto cond = parser.ParseExpression();
 	auto then = parser.ParseBlock();
-	std::unique_ptr<Expression> elseExpr;
+	unique_ptr<Expression> elseExpr;
 	if (parser.Match(TokenType::Keyword_Else))
 		elseExpr = parser.ParseBlock();
-	return std::make_unique<IfThenElseExpression>(std::move(cond), std::move(then), std::move(elseExpr));
+	return make_unique<IfThenElseExpression>(move(cond), move(then), move(elseExpr));
 }
 
-std::unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
+unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
 	assert(token.Type == TokenType::Keyword_Fn);
 	if (!parser.Match(TokenType::OpenParen))
 		throw ParseError(ParseErrorType::OpenParenExpected, parser.Peek());
@@ -118,12 +119,12 @@ std::unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parse
 	//
 	// parse args
 	//
-	std::vector<std::string> args;
+	vector<string> args;
 	while (parser.Peek().Type != TokenType::CloseParen) {
 		auto arg = parser.Next();
 		if(arg.Type != TokenType::Identifier)
 			throw ParseError(ParseErrorType::IdentifierExpected, arg);
-		args.push_back(std::move(arg.Lexeme));
+		args.push_back(move(arg.Lexeme));
 		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::CloseParen, false))
 			continue;
 		throw ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek());
@@ -131,10 +132,10 @@ std::unique_ptr<Expression> Logo2::AnonymousFunctionParslet::Parse(Parser& parse
 	parser.Next();		// eat close paren
 	if (parser.Match(TokenType::GoesTo)) {
 		auto expr = parser.ParseExpression();
-		return std::make_unique<AnonymousFunctionExpression>(std::move(args), std::move(expr));
+		return make_unique<AnonymousFunctionExpression>(move(args), move(expr));
 	}
 	auto block = parser.ParseBlock(args);
-	return std::make_unique<AnonymousFunctionExpression>(std::move(args), std::move(block));
+	return make_unique<AnonymousFunctionExpression>(move(args), move(block));
 }
 
 int Logo2::AnonymousFunctionParslet::Precedence() const {

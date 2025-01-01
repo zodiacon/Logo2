@@ -3,21 +3,22 @@
 #include "Interpreter.h"
 
 using namespace Logo2;
+using namespace std;
 
 NodeType Logo2::Expression::Type() const {
 	return NodeType::Expression;
 }
 
-BinaryExpression::BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right) 
-	: m_Left(std::move(left)), m_Right(std::move(right)), m_Operator(std::move(op)) {
+BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right) 
+	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
 }
 
 Value BinaryExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitBinary(this);
 }
 
-std::string BinaryExpression::ToString() const {
-	return std::format("({}{}{})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
+string BinaryExpression::ToString() const {
+	return format("({}{}{})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
 }
 
 Expression* BinaryExpression::Left() const {
@@ -32,22 +33,22 @@ Logo2::Token const& BinaryExpression::Operator() const {
 	return m_Operator;
 }
 
-PostfixExpression::PostfixExpression(std::unique_ptr<Expression> expr, Token token)
-	: m_Expr(std::move(expr)), m_Token(token) {
+PostfixExpression::PostfixExpression(unique_ptr<Expression> expr, Token token)
+	: m_Expr(move(expr)), m_Token(token) {
 }
 
 Value PostfixExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitPostfix(this);
 }
 
-LiteralExpression::LiteralExpression(Token token) : m_Token(std::move(token)) {
+LiteralExpression::LiteralExpression(Token token) : m_Token(move(token)) {
 }
 
 Value LiteralExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitLiteral(this);
 }
 
-std::string LiteralExpression::ToString() const {
+string LiteralExpression::ToString() const {
 	return m_Token.Lexeme;
 }
 
@@ -55,14 +56,14 @@ Token const& LiteralExpression::Literal() const {
 	return m_Token;
 }
 
-NameExpression::NameExpression(std::string name) : m_Name(std::move(name)) {
+NameExpression::NameExpression(string name) : m_Name(move(name)) {
 }
 
 Value NameExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitName(this);
 }
 
-std::string const& NameExpression::Name() const {
+string const& NameExpression::Name() const {
 	return m_Name;
 }
 
@@ -70,19 +71,19 @@ NodeType NameExpression::Type() const {
 	return NodeType::Name;
 }
 
-std::string NameExpression::ToString() const {
+string NameExpression::ToString() const {
 	return m_Name;
 }
 
-UnaryExpression::UnaryExpression(Token op, std::unique_ptr<Expression> arg) : m_Arg(std::move(arg)), m_Operator(std::move(op)) {
+UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) : m_Arg(move(arg)), m_Operator(move(op)) {
 }
 
 Value UnaryExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitUnary(this);
 }
 
-std::string UnaryExpression::ToString() const {
-	return std::format("({}{})", m_Operator.Lexeme, m_Arg->ToString());
+string UnaryExpression::ToString() const {
+	return format("({}{})", m_Operator.Lexeme, m_Arg->ToString());
 }
 
 Token const& UnaryExpression::Operator() const {
@@ -93,45 +94,45 @@ Expression* UnaryExpression::Arg() const {
 	return m_Arg.get();
 }
 
-void BlockExpression::Add(std::unique_ptr<LogoAstNode> node) {
-	m_Stmts.push_back(std::move(node));
+void BlockExpression::Add(unique_ptr<LogoAstNode> node) {
+	m_Stmts.push_back(move(node));
 }
 
 Value BlockExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitBlock(this);
 }
 
-std::vector<LogoAstNode*> const BlockExpression::Expressions() const {
-	std::vector<LogoAstNode*> expr;
+vector<LogoAstNode*> const BlockExpression::Expressions() const {
+	vector<LogoAstNode*> expr;
 	for (auto& e : m_Stmts)
 		expr.push_back(e.get());
 	return expr;
 }
 
-std::string BlockExpression::ToString() const {
-	std::string result;
+string BlockExpression::ToString() const {
+	string result;
 	for (auto& e : m_Stmts)
 		result += e->ToString() + "\n";
 	return result.substr(0, result.length() - 1);
 }
 
-VarStatement::VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init) 
-	: m_Name(std::move(name)), m_Init(std::move(init)), m_IsConst(isConst) {
+VarStatement::VarStatement(string name, bool isConst, unique_ptr<Expression> init) 
+	: m_Name(move(name)), m_Init(move(init)), m_IsConst(isConst) {
 }
 
 Value VarStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitVar(this);
 }
 
-std::string VarStatement::ToString() const {
-	return std::format("{} = {};", m_Name, m_Init ? m_Init->ToString() : "");
+string VarStatement::ToString() const {
+	return format("{} = {};", m_Name, m_Init ? m_Init->ToString() : "");
 }
 
 NodeType Logo2::VarStatement::Type() const {
 	return NodeType::Var;
 }
 
-std::string const& VarStatement::Name() const {
+string const& VarStatement::Name() const {
 	return m_Name;
 }
 
@@ -143,15 +144,15 @@ bool VarStatement::IsConst() const {
 	return m_IsConst;
 }
 
-AssignExpression::AssignExpression(std::string name, std::unique_ptr<Expression> expr) 
-	: m_Name(std::move(name)), m_Expr(std::move(expr)) {
+AssignExpression::AssignExpression(string name, unique_ptr<Expression> expr) 
+	: m_Name(move(name)), m_Expr(move(expr)) {
 }
 
 Value AssignExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssign(this);
 }
 
-std::string const& AssignExpression::Variable() const {
+string const& AssignExpression::Variable() const {
 	return m_Name;
 }
 
@@ -159,24 +160,24 @@ Expression* const AssignExpression::Value() const {
 	return m_Expr.get();
 }
 
-InvokeFunctionExpression::InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args) :
-	m_Name(std::move(name)), m_Arguments(std::move(args)) {
+InvokeFunctionExpression::InvokeFunctionExpression(string name, vector<unique_ptr<Expression>> args) :
+	m_Name(move(name)), m_Arguments(move(args)) {
 }
 
 Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitInvokeFunction(this);
 }
 
-std::string const& InvokeFunctionExpression::Name() const {
+string const& InvokeFunctionExpression::Name() const {
 	return m_Name;
 }
 
-std::vector<std::unique_ptr<Expression>> const& InvokeFunctionExpression::Arguments() const {
+vector<unique_ptr<Expression>> const& InvokeFunctionExpression::Arguments() const {
 	return m_Arguments;
 }
 
-RepeatStatement::RepeatStatement(std::unique_ptr<Expression> count, std::unique_ptr<BlockExpression> body) : 
-	m_Count(std::move(count)), m_Block(std::move(body)) {
+RepeatStatement::RepeatStatement(unique_ptr<Expression> count, unique_ptr<BlockExpression> body) : 
+	m_Count(move(count)), m_Block(move(body)) {
 }
 
 Value RepeatStatement::Accept(Visitor* visitor) const {
@@ -191,7 +192,7 @@ BlockExpression const* RepeatStatement::Block() const {
 	return m_Block.get();
 }
 
-ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(std::move(expr)) {
+ExpressionStatement::ExpressionStatement(unique_ptr<Expression> expr) : m_Expr(move(expr)) {
 }
 
 NodeType Logo2::ExpressionStatement::Type() const {
@@ -206,8 +207,8 @@ Expression const* ExpressionStatement::Expr() const {
 	return m_Expr.get();
 }
 
-Logo2::WhileStatement::WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<BlockExpression> body) :
-	m_Condition(std::move(condition)), m_Body(std::move(body)) {
+Logo2::WhileStatement::WhileStatement(unique_ptr<Expression> condition, unique_ptr<BlockExpression> body) :
+	m_Condition(move(condition)), m_Body(move(body)) {
 }
 
 Value Logo2::WhileStatement::Accept(Visitor* visitor) const {
@@ -222,8 +223,8 @@ BlockExpression const* Logo2::WhileStatement::Body() const {
 	return m_Body.get();
 }
 
-Logo2::IfThenElseExpression::IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr) : 
-	m_Condition(std::move(condition)), m_Then(std::move(thenExpr)), m_Else(std::move(elseExpr)) {
+Logo2::IfThenElseExpression::IfThenElseExpression(unique_ptr<Expression> condition, unique_ptr<Expression> thenExpr, unique_ptr<Expression> elseExpr) : 
+	m_Condition(move(condition)), m_Then(move(thenExpr)), m_Else(move(elseExpr)) {
 }
 
 Value Logo2::IfThenElseExpression::Accept(Visitor* visitor) const {
@@ -242,19 +243,19 @@ Expression const* Logo2::IfThenElseExpression::Else() const {
 	return m_Else.get();
 }
 
-Logo2::FunctionDeclaration::FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<Expression> body) : 
-	m_Name(std::move(name)), m_Parameters(std::move(parameters)), m_Body(std::move(body)) {
+Logo2::FunctionDeclaration::FunctionDeclaration(string name, vector<string> parameters, unique_ptr<Expression> body) : 
+	m_Name(move(name)), m_Parameters(move(parameters)), m_Body(move(body)) {
 }
 
 Value Logo2::FunctionDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitFunctionDeclaration(this);
 }
 
-std::string const& Logo2::FunctionDeclaration::Name() const {
+string const& Logo2::FunctionDeclaration::Name() const {
 	return m_Name;
 }
 
-std::vector<std::string> const& Logo2::FunctionDeclaration::Parameters() const {
+vector<string> const& Logo2::FunctionDeclaration::Parameters() const {
 	return m_Parameters;
 }
 
@@ -262,7 +263,7 @@ Expression const* Logo2::FunctionDeclaration::Body() const {
 	return m_Body.get();
 }
 
-Logo2::ReturnStatement::ReturnStatement(std::unique_ptr<Expression> expr) : m_Expr(std::move(expr)) {
+Logo2::ReturnStatement::ReturnStatement(unique_ptr<Expression> expr) : m_Expr(move(expr)) {
 }
 
 Value Logo2::ReturnStatement::Accept(Visitor* visitor) const {
@@ -284,8 +285,8 @@ bool Logo2::BreakOrContinueStatement::IsContinue() const {
 	return m_IsContinue;
 }
 
-Logo2::ForStatement::ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, std::unique_ptr<Expression> incExpr, std::unique_ptr<BlockExpression> body) :
-	m_Init(std::move(init)), m_While(std::move(whileExpr)), m_Inc(std::move(incExpr)), m_Body(std::move(body)) {
+Logo2::ForStatement::ForStatement(unique_ptr<Statement> init, unique_ptr<Expression> whileExpr, unique_ptr<Expression> incExpr, unique_ptr<BlockExpression> body) :
+	m_Init(move(init)), m_While(move(whileExpr)), m_Inc(move(incExpr)), m_Body(move(body)) {
 }
 
 Value Logo2::ForStatement::Accept(Visitor* visitor) const {
@@ -312,23 +313,23 @@ Value Statements::Accept(Visitor* visitor) const {
 	return visitor->VisitStatements(this);
 }
 
-void Statements::Add(std::unique_ptr<Statement> stmt) {
-	m_Stmts.push_back(std::move(stmt));
+void Statements::Add(unique_ptr<Statement> stmt) {
+	m_Stmts.push_back(move(stmt));
 }
 
-std::vector<std::unique_ptr<Statement>> const& Statements::Get() const {
+vector<unique_ptr<Statement>> const& Statements::Get() const {
 	return m_Stmts;
 }
 
-AnonymousFunctionExpression::AnonymousFunctionExpression(std::vector<std::string> args, std::unique_ptr<Expression> body) :
-	m_Args(std::move(args)), m_Body(std::move(body)) {
+AnonymousFunctionExpression::AnonymousFunctionExpression(vector<string> args, unique_ptr<Expression> body) :
+	m_Args(move(args)), m_Body(move(body)) {
 }
 
 Value Logo2::AnonymousFunctionExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAnonymousFunction(this);
 }
 
-std::vector<std::string> const& Logo2::AnonymousFunctionExpression::Args() const {
+vector<string> const& Logo2::AnonymousFunctionExpression::Args() const {
 	return m_Args;
 }
 
