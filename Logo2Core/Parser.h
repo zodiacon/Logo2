@@ -37,6 +37,9 @@ namespace Logo2 {
 	};
 
 	struct ParseError {
+		explicit ParseError(ParseErrorType type) : Error(type) {}
+		ParseError(ParseErrorType type, Token token, std::string text = "") : Error(type), ErrorToken(std::move(token)), ErrorText(std::move(text)) {}
+
 		ParseErrorType Error;
 		Token ErrorToken;
 		std::string ErrorText;	// optional
@@ -74,6 +77,8 @@ namespace Logo2 {
 		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
 
 	private:
+		void PushScope();
+		void PopScope();
 		void Init();
 		std::unique_ptr<Statements> DoParse();
 		int GetPrecedence() const;

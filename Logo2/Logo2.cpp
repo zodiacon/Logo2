@@ -33,9 +33,10 @@ int main(int argc, const char* argv[]) {
 	runtime.Init();
 	runtime.CreateLogoWindow(L"Logo 2", 800, 800);
 
+	std::unique_ptr<LogoAstNode> code;
 	if (argc > 1) {
 		try {
-			auto ast = parser.ParseFile(argv[1]);
+			code = parser.ParseFile(argv[1]);
 			if (parser.HasErrors()) {
 				for (auto& err : parser.Errors()) {
 					printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
@@ -43,7 +44,7 @@ int main(int argc, const char* argv[]) {
 				return 1;
 			}
 			try {
-				auto result = ast->Accept(&inter);
+				auto result = code->Accept(&inter);
 				if (result != nullptr)
 					std::println("{}", result.ToString());
 			}

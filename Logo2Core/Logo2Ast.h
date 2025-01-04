@@ -6,26 +6,35 @@
 
 namespace Logo2 {
 	enum class NodeType {
-		Unknown = -1,
+		Invalid,
 		Name,
-		Var, 
-		Expression,
-		Statement,
+		For,
+		Var,
 	};
 
 	class LogoAstNode abstract {
 	public:
+		virtual ~LogoAstNode() = default;
 		virtual std::string ToString() const {
 			return "";
 		}
 
-		virtual Value Accept(Visitor* visitor) const = 0;
 		virtual NodeType Type() const {
-			return NodeType::Unknown;
+			return NodeType::Invalid;
+		}
+		virtual Value Accept(Visitor* visitor) const = 0;
+		virtual bool IsStatement() const {
+			return false;
+		}
+		
+		virtual bool IsExpression() const {
+			return false;
 		}
 	};
 
 	class Statement abstract : public LogoAstNode {
+	public:
+		bool IsStatement() const override;
 	};
 
 	class Statements final : public Statement {
@@ -40,13 +49,14 @@ namespace Logo2 {
 
 	class Expression abstract : public Statement {
 	public:
-		NodeType Type() const override;
+		virtual bool IsExpression() const override {
+			return true;
+		}
 	};
 
 	class ExpressionStatement final : public Statement {
 	public:
 		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
-		NodeType Type() const override;
 		Value Accept(Visitor* visitor) const override;
 		Expression const* Expr() const;
 
@@ -80,9 +90,11 @@ namespace Logo2 {
 	class VarStatement : public Statement {
 	public:
 		VarStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
+		NodeType Type() const override {
+			return NodeType::Var;
+		}
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
-		NodeType Type() const override;
 
 		std::string const& Name() const;
 		Expression const* Init() const;
@@ -162,6 +174,7 @@ namespace Logo2 {
 		std::string const& Name() const;
 		std::vector<std::string> const& Parameters() const;
 		Expression const* Body() const;
+
 	private:
 		std::string m_Name;
 		std::vector<std::string> m_Parameters;
@@ -177,8 +190,8 @@ namespace Logo2 {
 		Expression const* Argument() const;
 
 	private:
-		Token m_Token;
 		std::unique_ptr<Expression> m_Expr;
+		Token m_Token;
 	};
 
 	class BinaryExpression : public Expression {
@@ -225,9 +238,11 @@ namespace Logo2 {
 	class NameExpression : public Expression {
 	public:
 		explicit NameExpression(std::string name);
+		NodeType Type() const override {
+			return NodeType::Name;
+		}
 		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const;
-		NodeType Type() const override;
 		std::string ToString() const override;
 
 	private:

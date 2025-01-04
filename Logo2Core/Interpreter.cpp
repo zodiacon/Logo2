@@ -222,7 +222,7 @@ Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
 	f.ArgCount = (int)decl->Parameters().size();
 	f.Code = decl->Body();
 	f.Parameters = decl->Parameters();
-	m_Functions.insert({ decl->Name(), std::move(f) });
+	m_Functions.try_emplace(decl->Name(), std::move(f));
 
 	return Value();
 }

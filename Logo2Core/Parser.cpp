@@ -115,6 +115,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	if (!Match(TokenType::OpenParen))
 		throw ParseError(ParseErrorType::OpenParenExpected, ident);
 
+	PushScope();
 	//
 	// get list of arguments
 	//
@@ -124,10 +125,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		if (param.Type != TokenType::Identifier)
 			throw ParseError(ParseErrorType::IdentifierExpected, ident);
 		parameters.push_back(param.Lexeme);
-		if (Match(TokenType::Comma))
-			continue;
-		if (!Match(TokenType::CloseParen, false))
-			throw ParseError(ParseErrorType::CloseParenExpected, ident);
+		Match(TokenType::Comma);
 	}
 
 	Next();		// eat close paren
@@ -145,6 +143,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		sym.Flags = SymbolFlags::None;
 		AddSymbol(sym);
 	}
+	PopScope();
 	return decl;
 }
 
@@ -173,7 +172,7 @@ unique_ptr<BlockExpression> Parser::ParseBlock(vector<string> const& args) {
 	if (!Match(TokenType::OpenBrace))
 		AddError(ParseError(ParseErrorType::OpenBraceExpected, Peek()));
 
-	m_Symbols.push(make_unique<SymbolTable>(m_Symbols.top().get()));
+	PushScope();
 
 	for (auto& arg : args) {
 		Symbol sym;
@@ -191,7 +190,7 @@ unique_ptr<BlockExpression> Parser::ParseBlock(vector<string> const& args) {
 		block->Add(move(stmt));
 	}
 	Next();		// eat close brace
-	m_Symbols.pop();
+	PopScope();
 	return block;
 }
 
@@ -212,6 +211,9 @@ unique_ptr<Statement> Parser::ParseStatement() {
 		case TokenType::Keyword_Continue: return ParseBreakContinueStatement(true);
 		case TokenType::Keyword_For: return ParseForStatement();
 		case TokenType::OpenBrace: return ParseBlock();
+		case TokenType::SemiColon: 
+			Next();		// eat semicolon empty statement
+			return ParseStatement();
 	}
 	auto expr = ParseExpression();
 	if (expr) {
@@ -246,10 +248,9 @@ unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool co
 
 unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Next();		// eat for
+	PushScope();
 	auto init = ParseStatement();
-	if (!init) {
-		AddError(ParseError(ParseErrorType::ExpressionOrVarExpected, Peek()));
-	}
+
 	auto whileExpr = ParseExpression();
 	if (!Match(TokenType::SemiColon))
 		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
@@ -258,7 +259,16 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	m_LoopCount++;
 	auto body = ParseBlock();
 	m_LoopCount--;
+	PopScope();
 	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
+}
+
+void Logo2::Parser::PushScope() {
+	m_Symbols.push(make_unique<SymbolTable>(m_Symbols.top().get()));
+}
+
+void Logo2::Parser::PopScope() {
+	m_Symbols.pop();
 }
 
 void Parser::Init() {

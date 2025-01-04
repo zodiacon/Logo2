@@ -5,10 +5,6 @@
 using namespace Logo2;
 using namespace std;
 
-NodeType Logo2::Expression::Type() const {
-	return NodeType::Expression;
-}
-
 BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right) 
 	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
 }
@@ -34,7 +30,7 @@ Logo2::Token const& BinaryExpression::Operator() const {
 }
 
 PostfixExpression::PostfixExpression(unique_ptr<Expression> expr, Token token)
-	: m_Expr(move(expr)), m_Token(token) {
+	: m_Expr(move(expr)), m_Token(move(token)) {
 }
 
 Value PostfixExpression::Accept(Visitor* visitor) const {
@@ -65,10 +61,6 @@ Value NameExpression::Accept(Visitor* visitor) const {
 
 string const& NameExpression::Name() const {
 	return m_Name;
-}
-
-NodeType NameExpression::Type() const {
-	return NodeType::Name;
 }
 
 string NameExpression::ToString() const {
@@ -126,10 +118,6 @@ Value VarStatement::Accept(Visitor* visitor) const {
 
 string VarStatement::ToString() const {
 	return format("{} = {};", m_Name, m_Init ? m_Init->ToString() : "");
-}
-
-NodeType Logo2::VarStatement::Type() const {
-	return NodeType::Var;
 }
 
 string const& VarStatement::Name() const {
@@ -193,10 +181,6 @@ BlockExpression const* RepeatStatement::Block() const {
 }
 
 ExpressionStatement::ExpressionStatement(unique_ptr<Expression> expr) : m_Expr(move(expr)) {
-}
-
-NodeType Logo2::ExpressionStatement::Type() const {
-	return NodeType::Expression;
 }
 
 Value ExpressionStatement::Accept(Visitor* visitor) const {
@@ -335,4 +319,8 @@ vector<string> const& Logo2::AnonymousFunctionExpression::Args() const {
 
 Expression const* Logo2::AnonymousFunctionExpression::Body() const {
 	return m_Body.get();
+}
+
+bool Logo2::Statement::IsStatement() const {
+	return true;
 }

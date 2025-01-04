@@ -16,7 +16,7 @@ namespace Logo2 {
 	};
 
 	struct RuntimeError {
-		RuntimeError(ErrorType type, LogoAstNode const* node = nullptr) : Error(type), Node(node) {}
+		explicit RuntimeError(ErrorType type, LogoAstNode const* node = nullptr) : Error(type), Node(node) {}
 
 		ErrorType Error;
 		LogoAstNode const* Node;

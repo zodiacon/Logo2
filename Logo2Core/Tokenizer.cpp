@@ -19,7 +19,7 @@ bool Logo2::Tokenizer::AddToken(string lexeme, TokenType type) {
 int Logo2::Tokenizer::AddTokens(span<pair<string, TokenType>> tokens) {
 	auto count = 0;
 	for (auto const& [str, type] : tokens)
-		count += AddToken(str, type);
+		count += AddToken(str, type) ? 1 : 0;
 	return count;
 }
 
