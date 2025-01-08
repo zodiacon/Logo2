@@ -169,5 +169,6 @@ Logo2::Token Logo2::Tokenizer::ParseString() {
 			return token;
 		}
 	}
+	m_Current++;
 	return Token { .Type = TokenType::String, .Lexeme = lexeme, .Line = m_Line, .Col = m_Col - (int)lexeme.length(), };
 }

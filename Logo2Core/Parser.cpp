@@ -333,6 +333,7 @@ void Parser::Init() {
 	AddParslet(TokenType::Mod, make_unique<BinaryOperatorParslet>(200));
 	AddParslet(TokenType::Sub, make_unique<PrefixOperatorParslet>(300));
 	AddParslet(TokenType::Integer, make_unique<NumberParslet>());
+	AddParslet(TokenType::String, make_unique<NumberParslet>());
 	AddParslet(TokenType::Keyword_True, make_unique<NumberParslet>());
 	AddParslet(TokenType::Real, make_unique<NumberParslet>());
 	AddParslet(TokenType::Identifier, make_unique<NameParslet>());

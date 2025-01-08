@@ -131,6 +131,7 @@ namespace Logo2 {
 			case 1: return left.Real() + right.Integer();
 			case 1 << 4: return left.Integer() + right.Real();
 			case 1 | (1 << 4): return left.Real() + right.Real();
+			case 3 | (3 << 4) : return left.String() + right.String();
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}

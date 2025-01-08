@@ -82,7 +82,6 @@ void Logo2::Turtle::SetPenColor(BYTE r, BYTE g, BYTE b, BYTE a) {
 	m_Commands.push_back(cmd);
 	if (m_pNotify)
 		m_pNotify->AddCommand(this, cmd);
-
 }
 
 void Logo2::Turtle::SetPenWidth(float width) {
