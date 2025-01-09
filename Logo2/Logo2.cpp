@@ -110,7 +110,7 @@ int main(int argc, const char* argv[]) {
 			}
 		}
 		catch (ParseError const& err) {
-			printf("Error (%d,%d): %d\n", err.ErrorToken.Line, err.ErrorToken.Col, err.Error);
+			println("Error {} ({},{}): {}\n", (int)err.Error, err.ErrorToken.Line, err.ErrorToken.Col, err.ErrorText);
 			continue;
 		}
 

@@ -36,7 +36,6 @@ namespace Logo2 {
 		Assign_Mul,
 		Assign_Div,
 		Assign_Mod,
-		Assign_Neg,
 		Assign_Power,
 		Assign_And,
 		Assign_Or,
@@ -67,11 +66,15 @@ namespace Logo2 {
 		Keyword_Do,
 		Keyword_Break,
 		Keyword_Continue,
+		Keyword_And,
+		Keyword_Or,
+		Keyword_Not,
 	};
 
 	struct Token {
 		TokenType Type;
 		std::string Lexeme;
 		int Line, Col;
+		std::variant<long long, double, bool> Value;
 	};
 }

@@ -104,13 +104,29 @@ Logo2::Token Logo2::Tokenizer::ParseIdentifier() {
 Logo2::Token Logo2::Tokenizer::ParseNumber() {
 	char* pd, *pi;
 	auto dvalue = strtod(m_Current, &pd);
-	auto ivalue = strtoll(m_Current, &pi, 0);
+	int base = 10;
+	int startLen = 0;
+	if (*m_Current == '0') {
+		switch (m_Current[1]) {
+			case 'x': case 'X': startLen = 2; base = 16; break;
+			case 'b': case 'B': startLen = 2; base = 2; break;
+			case 'o': case 'O': startLen = 2; base = 8; break;
+			default: m_Current -= 2; break;
+		}
+		m_Current += 2;
+	}
+	auto ivalue = strtoll(m_Current, &pi, base);
 	assert(pd && pi);
 	auto type = pd > pi ? TokenType::Real : TokenType::Integer;
 	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
-	m_Col += (int)len;
+	m_Col += (int)len + startLen;
 	m_Current += len;
-	auto token = Token{ .Type = type, .Lexeme = string(m_Current - len, m_Current), .Line = m_Line, .Col = m_Col - len };
+	auto token = Token{ .Type = type, .Lexeme = string(m_Current - len - startLen, m_Current), .Line = m_Line, .Col = m_Col - len };
+	if (type == TokenType::Integer)
+		token.Value = ivalue;
+	else 
+		token.Value = dvalue;
+
 	if (*m_Current == '\n') {
 		m_Col = 1;
 		m_Line++;

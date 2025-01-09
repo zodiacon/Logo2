@@ -218,6 +218,7 @@ namespace Logo2 {
 			case 1 | (1 << 4): return left.Real() <=> right.Real();
 			case 2 << 4: return left.Integer() <=> (int)right.Boolean();
 			case 2 | (2 << 4) : return left.Boolean() <=> right.Boolean();
+			case 3 | (3 << 4) : return left.String() <=> right.String();
 		}
 		throw RuntimeError(ErrorType::TypeMismatch);
 	}

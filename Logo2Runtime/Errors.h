@@ -16,9 +16,10 @@ namespace Logo2 {
 	};
 
 	struct RuntimeError {
-		explicit RuntimeError(ErrorType type, LogoAstNode const* node = nullptr) : Error(type), Node(node) {}
+		explicit RuntimeError(ErrorType type, LogoAstNode const* node = nullptr, std::string text = "") : Error(type), Node(node), ErrorText(std::move(text)) {}
 
 		ErrorType Error;
 		LogoAstNode const* Node;
+		std::string ErrorText;
 	};
 }

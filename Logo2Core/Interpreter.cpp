@@ -19,10 +19,10 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 	auto& lit = expr->Literal();
 	switch (lit.Type) {
 	case TokenType::Integer:
-		return std::stoll(lit.Lexeme, nullptr, 0);
+		return get<0>(lit.Value);
 
 	case TokenType::Real:
-		return std::stod(lit.Lexeme);
+		return get<1>(lit.Value);
 
 	case TokenType::String:
 		return lit.Lexeme;

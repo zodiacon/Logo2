@@ -9,6 +9,25 @@ namespace Logo2 {
 	struct Value;
 	struct Scope;
 
+	struct EnumType {
+		explicit EnumType(std::string name);
+
+	private:
+		std::unordered_map<std::string, long long> m_Values;
+	};
+
+	struct EnumTypeObject {
+		explicit EnumTypeObject(EnumType& type);
+
+	};
+
+	struct UserType {
+	};
+
+	struct UserObject {
+		explicit UserObject(UserType& type);
+	};
+
 	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
 
 	struct Function {
@@ -61,6 +80,6 @@ namespace Logo2 {
 		std::string ToString() const;
 
 	private:
-		std::variant<long long, double, bool, std::string, nullptr_t, std::shared_ptr<Function>> m_Value;
+		std::variant<long long, double, bool, std::string, nullptr_t, std::shared_ptr<Function>, EnumTypeObject, std::shared_ptr<UserObject>> m_Value;
 	};
 }

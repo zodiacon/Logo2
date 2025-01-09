@@ -323,6 +323,9 @@ void Parser::Init() {
 		{ "for", TokenType::Keyword_For },
 		{ "fn", TokenType::Keyword_Fn },
 		{ "return", TokenType::Keyword_Return },
+		{ "and", TokenType::Keyword_And },
+		{ "not", TokenType::Keyword_Not },
+		{ "or", TokenType::Keyword_Or },
 	};
 	m_Tokenizer.AddTokens(tokens);
 
