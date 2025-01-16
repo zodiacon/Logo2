@@ -156,6 +156,7 @@
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Tokenizer.h" />
+    <ClInclude Include="TypeObject.h" />
     <ClInclude Include="Value.h" />
     <ClInclude Include="Visitor.h" />
   </ItemGroup>
@@ -174,6 +175,7 @@
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Tokenizer.cpp" />
+    <ClCompile Include="TypeObject.cpp" />
     <ClCompile Include="Value.cpp" />
     <ClCompile Include="Visitor.cpp" />
   </ItemGroup>

@@ -47,6 +47,10 @@ Runtime::Runtime(Interpreter& inter) {
         std::println("{}", args[0].ToString());
         return Value();
         });
+    inter.AddNativeFunction("exit", 1, [this](auto& intr, auto& args) {
+        throw QuitAppException{ (int)args[0].ToInteger() };
+        return Value();
+        });
 
 }
 

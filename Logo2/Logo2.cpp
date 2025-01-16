@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]) {
 			}
 			try {
 				auto result = code->Accept(&inter);
-				if (result != nullptr)
+				if (result)
 					std::println("{}", result.ToString());
 			}
 			catch (RuntimeError const& err) {
@@ -102,12 +102,15 @@ int main(int argc, const char* argv[]) {
 			}
 			try {
 				auto result = ast->Accept(&inter);
-				if (result != nullptr)
+				if (result)
 					std::println("{}", result.ToString());
 			}
 			catch (RuntimeError const& err) {
 				printf("Runtime error: %d\n", (int)err.Error);
 			}
+		}
+		catch (QuitAppException const&) {
+			break;
 		}
 		catch (ParseError const& err) {
 			println("Error {} ({},{}): {}\n", (int)err.Error, err.ErrorToken.Line, err.ErrorToken.Col, err.ErrorText);

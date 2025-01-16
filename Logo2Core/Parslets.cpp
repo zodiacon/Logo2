@@ -31,14 +31,23 @@ int PostfixOperatorParslet::Precedence() const {
 }
 
 unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	return make_unique<NameExpression>(token.Lexeme);
+	auto name = token.Lexeme;
+	while (parser.Peek().Type == TokenType::ScopeRes) {
+		parser.Next();
+		if (parser.Peek().Type != TokenType::Identifier) {
+			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
+			break;
+		}
+		name += "::" + parser.Next().Lexeme;
+	}
+	return make_unique<NameExpression>(name);
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
 	return make_unique<UnaryExpression>(token, parser.ParseExpression(m_Precedence));
 }
 
-unique_ptr<Expression> NumberParslet::Parse(Parser& parser, Token const& token) {
+unique_ptr<Expression> LiteralParslet::Parse(Parser& parser, Token const& token) {
 	return make_unique<LiteralExpression>(token);
 }
 

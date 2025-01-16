@@ -33,7 +33,7 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 	case TokenType::Keyword_False:
 		return false;
 	}
-	return nullptr;
+	return {};
 }
 
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
@@ -42,12 +42,13 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	case TokenType::Sub: return expr->Left()->Accept(this) - expr->Right()->Accept(this);
 	case TokenType::Mul: return expr->Left()->Accept(this) * expr->Right()->Accept(this);
 	case TokenType::Div: return expr->Left()->Accept(this) / expr->Right()->Accept(this);
+	case TokenType::Power: return expr->Left()->Accept(this).Power(expr->Right()->Accept(this));
 	case TokenType::Mod: return expr->Left()->Accept(this) % expr->Right()->Accept(this);
 	case TokenType::And: return expr->Left()->Accept(this) & expr->Right()->Accept(this);
 	case TokenType::Or: return expr->Left()->Accept(this) | expr->Right()->Accept(this);
 	case TokenType::Xor: return expr->Left()->Accept(this) ^ expr->Right()->Accept(this);
 	case TokenType::Equal: return expr->Left()->Accept(this) == expr->Right()->Accept(this);
-	case TokenType::NotEqual: return expr->Left()->Accept(this) != expr->Right()->Accept(this);
+	case TokenType::NotEqual: return expr->Left()->Accept(this) != expr->Right()->Accept(this);;
 	case TokenType::LessThan: return expr->Left()->Accept(this) < expr->Right()->Accept(this);
 	case TokenType::LessThanOrEqual: return expr->Left()->Accept(this) <= expr->Right()->Accept(this);
 	case TokenType::GreaterThan: return expr->Left()->Accept(this) > expr->Right()->Accept(this);
@@ -149,7 +150,7 @@ Value Interpreter::InvokeFunction(Function const& f, InvokeFunctionExpression co
 		return result;
 	}
 	assert(false);
-	return nullptr;
+	return {};
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
@@ -173,32 +174,34 @@ Value Interpreter::VisitRepeat(RepeatStatement const* expr) {
 	auto n = count.Integer();
 	PushScope();
 	while (n-- > 0) {
-		try {
-			Eval(expr->Block());
+		Eval(expr->Block());
+		if (m_LoopResult == LoopResult::Break) {
+			m_LoopResult = LoopResult::None;
+			break;
 		}
-		catch (BreakOrContinue const& bc) {
-			if (!bc.Continue)
-				break;
+		if (m_LoopResult == LoopResult::Continue) {
+			m_LoopResult = LoopResult::None;
+			continue;
 		}
 	}
 	PopScope();
-	return nullptr;     // repeat has no return value
+	return {};     // repeat has no return value
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
 	while (Eval(stmt->Condition()).ToBoolean()) {
 		PushScope();
-		try {
-			Eval(stmt->Body());
+		Eval(stmt->Body());
+		if (m_LoopResult == LoopResult::Break) {
+			m_LoopResult = LoopResult::None;
+			break;
 		}
-		catch (BreakOrContinue const& bc) {
-			if (!bc.Continue) {
-				PopScope();
-				break;
-			}
+		if (m_LoopResult == LoopResult::Continue) {
+			m_LoopResult = LoopResult::None;
+			continue;
 		}
-		PopScope();
 	}
+	PopScope();
 	return Value();
 }
 
@@ -232,20 +235,26 @@ Value Interpreter::VisitReturn(ReturnStatement const* stmt) {
 }
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
-	throw BreakOrContinue(stmt->IsContinue());
+	if (stmt->IsContinue())
+		m_LoopResult = LoopResult::Continue;
+	else
+		m_LoopResult = LoopResult::Break;
+	return {};
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
 	for (Eval(stmt->Init()); Eval(stmt->While()).ToBoolean(); Eval(stmt->Inc())) {
-		try {
-			Eval(stmt->Body());
+		Eval(stmt->Body());
+		if (m_LoopResult == LoopResult::Break) {
+			m_LoopResult = LoopResult::None;
+			break;
 		}
-		catch (BreakOrContinue const& bc) {
-			if (!bc.Continue)
-				break;
+		if (m_LoopResult == LoopResult::Continue) {
+			m_LoopResult = LoopResult::None;
+			continue;
 		}
 	}
-	return nullptr;
+	return {};
 }
 
 Value Interpreter::VisitStatements(Statements const* stmts) {
@@ -318,4 +327,8 @@ std::unique_ptr<Scope> Logo2::Scope::Clone(Scope* parent) const {
 	if(parent)
 		scope->m_Parent = parent;
 	return scope;
+}
+
+Value Logo2::Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
+	return {};
 }

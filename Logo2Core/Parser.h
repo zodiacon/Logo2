@@ -34,6 +34,7 @@ namespace Logo2 {
 		ConditionExpressionExpected,
 		BreakContinueNoLoop,
 		ExpressionOrVarExpected,
+		IllegalExpression,
 	};
 
 	struct ParseError {
@@ -67,11 +68,13 @@ namespace Logo2 {
 		std::unique_ptr<ReturnStatement> ParseReturnStatement();
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement(bool cont);
 		std::unique_ptr<ForStatement> ParseForStatement();
+		std::unique_ptr<EnumDeclaration> ParseEnumDeclaration();
 
 		Token Next();
 		Token Peek() const;
-		bool Match(TokenType type, bool consume = true);
-		bool Match(std::string_view lexeme, bool consume = true);
+		bool SkipTo(TokenType type);
+		bool Match(TokenType type, bool consume = true, bool errorIfNotFound = false);
+		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
 
 		bool AddSymbol(Symbol sym);
 		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
@@ -90,6 +93,7 @@ namespace Logo2 {
 		std::vector<Token> m_Tokens;
 		size_t m_Current;
 		std::stack<std::unique_ptr<SymbolTable>> m_Symbols;
+		std::stack<std::string> m_Namespaces;
 		int m_LoopCount{ 0 };
 	};
 

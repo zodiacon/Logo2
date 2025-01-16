@@ -10,6 +10,7 @@ namespace Logo2 {
 		Name,
 		For,
 		Var,
+		Literal,
 	};
 
 	class LogoAstNode abstract {
@@ -166,6 +167,19 @@ namespace Logo2 {
 		std::unique_ptr<Expression> m_Then, m_Else;
 	};
 
+	class EnumDeclaration : public Statement {
+	public:
+		EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values);
+		Value Accept(Visitor* visitor) const override;
+
+		std::string const& Name() const;
+		std::unordered_map<std::string, long long> const& Values() const;
+
+	private:
+		std::string m_Name;
+		std::unordered_map<std::string, long long> m_Values;
+	};
+
 	class FunctionDeclaration : public Statement {
 	public:
 		FunctionDeclaration(std::string name, std::vector<std::string> parameters, std::unique_ptr<Expression> body);
@@ -228,6 +242,7 @@ namespace Logo2 {
 		explicit LiteralExpression(Token token);
 		Value Accept(Visitor* visitor) const override;
 
+		NodeType Type() const override;
 		std::string ToString() const override;
 		Token const& Literal() const;
 

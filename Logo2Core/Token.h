@@ -40,6 +40,7 @@ namespace Logo2 {
 		Assign_And,
 		Assign_Or,
 		Assign_Xor,
+		ScopeRes,
 
 		Equal,
 		NotEqual,
@@ -63,12 +64,15 @@ namespace Logo2 {
 		Keyword_True,
 		Keyword_False,
 		Keyword_For,
+		Keyword_ForEach,
 		Keyword_Do,
 		Keyword_Break,
+		Keyword_BreakOut,
 		Keyword_Continue,
 		Keyword_And,
 		Keyword_Or,
 		Keyword_Not,
+		Keyword_Enum,
 	};
 
 	struct Token {

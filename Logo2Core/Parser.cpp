@@ -210,6 +210,7 @@ unique_ptr<Statement> Parser::ParseStatement() {
 		case TokenType::Keyword_Break: return ParseBreakContinueStatement(false);
 		case TokenType::Keyword_Continue: return ParseBreakContinueStatement(true);
 		case TokenType::Keyword_For: return ParseForStatement();
+		case TokenType::Keyword_Enum: return ParseEnumDeclaration();
 		case TokenType::OpenBrace: return ParseBlock();
 		case TokenType::SemiColon: 
 			Next();		// eat semicolon empty statement
@@ -263,6 +264,61 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
 }
 
+unique_ptr<EnumDeclaration> Logo2::Parser::ParseEnumDeclaration() {
+	Next();		// eat enum
+	auto name = Next();
+	if (name.Type != TokenType::Identifier) {
+		AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Expected identifier after 'enum'"));
+		SkipTo(TokenType::CloseBrace);
+		return nullptr;
+	}
+	auto sym = FindSymbol(name.Lexeme);
+	if (sym) {
+		AddError(ParseError(ParseErrorType::DuplicateDefinition, name, "Idenitifier already defined in current scope"));
+	}
+
+	unordered_map<string, long long> values;
+	Match(TokenType::OpenBrace, true, true);
+
+	long long current = 0;
+	while (Peek().Type != TokenType::CloseBrace && Peek().Type != TokenType::Invalid) {
+		auto next = Next();
+		bool error = false;
+		if (next.Type != TokenType::Identifier) {
+			AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Expected: identifier"));
+			error = true;
+		}
+		if (values.find(next.Lexeme) != values.end()) {
+			AddError(ParseError(ParseErrorType::DuplicateDefinition, name, format("Duplicate enum value '{}'", next.Lexeme)));
+			error = true;
+		}
+		if (Match(TokenType::Assign)) {
+			auto value = ParseExpression();
+			if (value == nullptr || value->Type() != NodeType::Literal)
+				AddError(ParseError(ParseErrorType::IllegalExpression, Peek(), "Expression must be constant"));
+			current = get<0>(((LiteralExpression*)value.get())->Literal().Value);
+		}
+		if (!error)
+			values.insert({ move(next.Lexeme), current });
+		current++;
+		Match(TokenType::Comma, true, Peek().Type != TokenType::CloseBrace);
+	}
+	Next();		// consume close brace
+	if (sym)
+		return nullptr;
+
+	auto decl = make_unique<EnumDeclaration>(move(name.Lexeme), move(values));
+	{
+		Symbol sym;
+		sym.Name = decl->Name();
+		sym.Type = SymbolType::Enum;
+		sym.Flags = SymbolFlags::None;
+		AddSymbol(sym);
+	}
+
+	return decl;
+}
+
 void Logo2::Parser::PushScope() {
 	m_Symbols.push(make_unique<SymbolTable>(m_Symbols.top().get()));
 }
@@ -308,6 +364,7 @@ void Parser::Init() {
 		{ "]", TokenType::CloseBracket },
 		{ ";", TokenType::SemiColon },
 		{ ",", TokenType::Comma },
+		{ "::", TokenType::ScopeRes },
 		{ "=>", TokenType::GoesTo },
 		{ "null", TokenType::Keyword_Null },
 		{ "true", TokenType::Keyword_True },
@@ -318,14 +375,18 @@ void Parser::Init() {
 		{ "repeat", TokenType::Keyword_Repeat },
 		{ "while", TokenType::Keyword_While },
 		{ "break", TokenType::Keyword_Break },
+		{ "breakout", TokenType::Keyword_BreakOut },
 		{ "continue", TokenType::Keyword_Continue },
 		{ "else", TokenType::Keyword_Else },
 		{ "for", TokenType::Keyword_For },
+		{ "foreach", TokenType::Keyword_ForEach },
 		{ "fn", TokenType::Keyword_Fn },
 		{ "return", TokenType::Keyword_Return },
 		{ "and", TokenType::Keyword_And },
 		{ "not", TokenType::Keyword_Not },
 		{ "or", TokenType::Keyword_Or },
+		{ "enum", TokenType::Keyword_Enum },
+		{ "do", TokenType::Keyword_Do },
 	};
 	m_Tokenizer.AddTokens(tokens);
 
@@ -335,13 +396,13 @@ void Parser::Init() {
 	AddParslet(TokenType::Div, make_unique<BinaryOperatorParslet>(200));
 	AddParslet(TokenType::Mod, make_unique<BinaryOperatorParslet>(200));
 	AddParslet(TokenType::Sub, make_unique<PrefixOperatorParslet>(300));
-	AddParslet(TokenType::Integer, make_unique<NumberParslet>());
-	AddParslet(TokenType::String, make_unique<NumberParslet>());
-	AddParslet(TokenType::Keyword_True, make_unique<NumberParslet>());
-	AddParslet(TokenType::Real, make_unique<NumberParslet>());
+	AddParslet(TokenType::Integer, make_unique<LiteralParslet>());
+	AddParslet(TokenType::String, make_unique<LiteralParslet>());
+	AddParslet(TokenType::Keyword_True, make_unique<LiteralParslet>());
+	AddParslet(TokenType::Real, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Identifier, make_unique<NameParslet>());
 	AddParslet(TokenType::OpenParen, make_unique<GroupParslet>());
-	AddParslet(TokenType::Power, make_unique<BinaryOperatorParslet>(30, true));
+	AddParslet(TokenType::Power, make_unique<BinaryOperatorParslet>(350, true));
 	AddParslet(TokenType::Assign, make_unique<AssignParslet>());
 	AddParslet(TokenType::Equal, make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::NotEqual, make_unique<BinaryOperatorParslet>(90));
@@ -383,22 +444,37 @@ Token Parser::Peek() const {
 	return m_Tokenizer.Peek();
 }
 
-bool Parser::Match(TokenType type, bool consume) {
+bool Logo2::Parser::SkipTo(TokenType type) {
+	auto next = Next();
+	while (next.Type != type) {
+		if (next.Type == TokenType::Invalid)
+			return false;
+	}
+	return true;
+}
+
+bool Parser::Match(TokenType type, bool consume, bool errorIfNotFound) {
 	auto next = Peek();
 	if (consume && next.Type == type) {
 		Next();
 		return true;
 	}
-	return next.Type == type;
+	auto found = next.Type == type;
+	if (errorIfNotFound)
+		AddError(ParseError(ParseErrorType::OpenBraceExpected, next));
+	return found;
 }
 
-bool Parser::Match(string_view lexeme, bool consume) {
+bool Parser::Match(string_view lexeme, bool consume, bool errorIfNotFound) {
 	auto next = Peek();
 	if (consume && next.Lexeme == lexeme) {
 		Next();
 		return true;
 	}
-	return next.Lexeme == lexeme;
+	auto found = next.Lexeme == lexeme;
+	if (errorIfNotFound)
+		AddError(ParseError(ParseErrorType::OpenBraceExpected, next, format("Expected '{}'", lexeme)));
+	return found;
 }
 
 bool Parser::AddSymbol(Symbol sym) {

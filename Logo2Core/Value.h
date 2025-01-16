@@ -9,23 +9,10 @@ namespace Logo2 {
 	struct Value;
 	struct Scope;
 
-	struct EnumType {
-		explicit EnumType(std::string name);
-
-	private:
-		std::unordered_map<std::string, long long> m_Values;
-	};
-
-	struct EnumTypeObject {
-		explicit EnumTypeObject(EnumType& type);
-
-	};
-
-	struct UserType {
-	};
+	class TypeObject;
 
 	struct UserObject {
-		explicit UserObject(UserType& type);
+		explicit UserObject(TypeObject& type);
 	};
 
 	using NativeFunction = std::function<Value(Interpreter&, std::vector<Value>&)>;
@@ -42,10 +29,15 @@ namespace Logo2 {
 		Value(double d) : m_Value(d) {}
 		Value(long long n) : m_Value(n) {}
 		Value(bool b) : m_Value(b) {}
-		Value(nullptr_t = nullptr) : m_Value(nullptr) {}
+		Value() = default;
 		Value(std::string s) : m_Value(std::move(s)) {}
 		Value(std::shared_ptr<Function> f);
 
+		enum TypeIndex {
+			TypeNull, TypeInteger, TypeReal, TypeBoolean, TypeString, TypeFunction, TypeUserObject
+		};
+
+		operator bool() const;
 		bool IsInteger() const;
 		bool IsBoolean() const;
 		bool IsReal() const;
@@ -56,18 +48,20 @@ namespace Logo2 {
 		double ToDouble() const;
 		long long ToInteger() const;
 
-		friend Value operator+(Value const& left, Value const& right);
-		friend Value operator-(Value const& left, Value const& right);
-		friend Value operator*(Value const& left, Value const& right);
-		friend Value operator/(Value const& left, Value const& right);
-		friend Value operator%(Value const& left, Value const& right);
-		friend Value operator&(Value const& left, Value const& right);
-		friend Value operator|(Value const& left, Value const& right);
-		friend Value operator^(Value const& left, Value const& right);
+		Value operator+(Value const& right) const;
+		Value operator-(Value const& right) const;
+		Value operator*(Value const& right) const;
+		Value operator/(Value const& right) const;
+		Value operator%(Value const& right) const;
+		Value operator&(Value const& right) const;
+		Value operator|(Value const& right) const;
+		Value operator^(Value const& right) const;
 		Value operator-() const;
 		Value operator!() const;
 		Value operator~() const;
-		friend std::partial_ordering operator<=>(Value const& left, Value const& right);
+		Value Power(Value const& right) const;
+
+		std::partial_ordering operator<=>(Value const& right) const;
 		bool operator==(Value const& other) const;
 
 		long long Integer() const;
@@ -76,10 +70,10 @@ namespace Logo2 {
 		std::string const& String() const;
 		Function const* const Func() const;
 
-		int Index() const;
+		TypeIndex Index() const;
 		std::string ToString() const;
 
 	private:
-		std::variant<long long, double, bool, std::string, nullptr_t, std::shared_ptr<Function>, EnumTypeObject, std::shared_ptr<UserObject>> m_Value;
+		std::variant<std::monostate, long long, double, bool, std::string, std::shared_ptr<Function>, std::shared_ptr<UserObject>> m_Value;
 	};
 }

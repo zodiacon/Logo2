@@ -5,6 +5,7 @@
 #include "Logo2Core.h"
 #include <stack>
 #include "Visitor.h"
+#include "TypeObject.h"
 
 namespace Logo2 {
 	class Interpreter;
@@ -36,8 +37,8 @@ namespace Logo2 {
 		Expression const* ReturnValue;
 	};
 
-	struct BreakOrContinue {
-		bool Continue;
+	struct QuitAppException {
+		int ExitCode;
 	};
 
 	class Interpreter : public Visitor {
@@ -63,6 +64,7 @@ namespace Logo2 {
 		Value VisitFor(ForStatement const* stmt) override;
 		Value VisitStatements(Statements const* stmts) override;
 		Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) override;
+		Value VisitEnumDeclaration(EnumDeclaration const* decl) override;
 
 		bool AddNativeFunction(std::string name, int arity, NativeFunction f);
 		bool AddVariable(std::string name, Variable var);
@@ -71,11 +73,18 @@ namespace Logo2 {
 		Value InvokeFunction(Function const& f, InvokeFunctionExpression const* expr);
 
 	private:
+		enum class LoopResult {
+			None,
+			Break,
+			Continue
+		};
 		void PushScope();
 		void PopScope();
 
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
 		std::unordered_map<std::string, Function> m_Functions;
+		LoopResult m_LoopResult{ LoopResult::None };
+		std::unordered_map<std::string, TypeObject> m_Types;
 	};
 
 	DEFINE_ENUM_FLAG_OPERATORS(Logo2::VariableFlags);

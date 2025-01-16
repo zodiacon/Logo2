@@ -44,6 +44,10 @@ Value LiteralExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitLiteral(this);
 }
 
+NodeType Logo2::LiteralExpression::Type() const {
+	return NodeType::Literal;
+}
+
 string LiteralExpression::ToString() const {
 	return m_Token.Lexeme;
 }
@@ -323,4 +327,15 @@ Expression const* Logo2::AnonymousFunctionExpression::Body() const {
 
 bool Logo2::Statement::IsStatement() const {
 	return true;
+}
+
+Logo2::EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {
+}
+
+Value Logo2::EnumDeclaration::Accept(Visitor* visitor) const {
+	return visitor->VisitEnumDeclaration(this);
+}
+
+std::string const& Logo2::EnumDeclaration::Name() const {
+	return m_Name;
 }

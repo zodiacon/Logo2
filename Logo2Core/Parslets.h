@@ -17,7 +17,7 @@ namespace Logo2 {
 		}
 	};
 
-	struct NumberParslet : PrefixParslet {
+	struct LiteralParslet : PrefixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
 	};
 
